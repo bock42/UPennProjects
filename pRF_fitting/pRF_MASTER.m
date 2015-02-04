@@ -53,6 +53,20 @@ register_feat(session_dir,subject_name);
 %   are orthogonal to the block contrasts.
 denoise(session_dir,subject_name);
 %% pRF analysis
-% Takes the denoised output from "denoise", projects the 4D timeseries to the surface, copies the Benson et al. (2013) template to subject surface space, creates an "occipital" ROI, and generates a population receptive field (pRF) estimate using stimuli generated from code based on the vista-disp directory of the mrVista toolbox. The resulting pRF maps from individual runs are averaged across runs, plotted on the fsaverage_sym surface, and then averaged across hemispheres. Finally, these maps are converted to a format for template fitting using Mathematica
-make_pRF(session_dir,subject_name,runs)
+% Generates a population receptive field (pRF) estimate using data obtained
+%   while subjects viewed retinotopy stimuli (e.g. drifting bars). The 
+%   resulting pRF maps are then averaged across runs. 
+% If ROI = 'occipital', the averaged maps are plotted on the fsaverage_sym 
+%   surface, averaged across hemispheres, and converted to a format for 
+%   template fitting using Mathematica.
+make_pRF(session_dir,subject_name,runs,ROI)
+%% Run template fitting in Mathematica
+% In a notebook in Mathematica, run the template fitting developed by Noah
+%   Benson. The last line of that notebook saves a file (default:
+%   ~/Desktop/template_fitting.mgz).
+%% Copy over template fits
+% Take the output from Mathematica, transfer it back to .nii.gz format,
+%   adjust the polar angle values back to radians.
+post_template(session_dir,subject_name)
+
         
