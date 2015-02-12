@@ -1,0 +1,3004 @@
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[         0,          0]
+NotebookDataLength[    135313,       3003]
+NotebookOptionsPosition[    130290,       2842]
+NotebookOutlinePosition[    130672,       2859]
+CellTagsIndexPosition[    130629,       2856]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Introduction", "Section",
+ CellChangeTimes->{{3.610203406133337*^9, 3.610203408235916*^9}, {
+  3.6224697134443407`*^9, 3.62246971441045*^9}}],
+
+Cell["\<\
+The introduction should run without exception as long as you have the \
+MmaSurfer library installed (see the dependencies subsection).  For the most \
+part, this section just sets up useful functions and needn\[CloseCurlyQuote]t \
+be scrutinized too carefully.\
+\>", "Text",
+ CellChangeTimes->{{3.627062153287245*^9, 3.627062203054553*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Dependencies and Configuration", "Subsection",
+ CellChangeTimes->{{3.602347071101986*^9, 3.602347080587337*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Dependencies", "Subsubsection",
+ CellChangeTimes->{{3.602347082588312*^9, 3.602347083923566*^9}}],
+
+Cell["\<\
+These are the dependencies for this file. You\[CloseCurlyQuote]ll need to \
+install MmaSurfer (https://github.com/noahbenson/MmaSurfer/) to use these. \
+The MmaSurfer repository should contain a tutorial.nb file that explains how \
+to install the library.\
+\>", "Text",
+ CellChangeTimes->{{3.627061657228716*^9, 3.627061688528908*^9}, {
+  3.62706172993764*^9, 3.6270617345141153`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{"<<", "CorticalSurface`"}], "\[IndentingNewLine]", 
+ RowBox[{"<<", "CorticalVolume`"}], "\[IndentingNewLine]", 
+ RowBox[{"<<", "FreeSurfer`"}], "\[IndentingNewLine]", 
+ RowBox[{"<<", "VisualCortex`"}]}], "Input",
+ CellChangeTimes->{{3.602347074131181*^9, 3.6023470745440807`*^9}, {
+  3.6028543897061996`*^9, 3.602854398646388*^9}, {3.605716760419005*^9, 
+  3.605716777676827*^9}, {3.61823321078259*^9, 3.6182332141838703`*^9}, {
+  3.618233428428472*^9, 3.618233429586706*^9}, {3.618312882681581*^9, 
+  3.6183128945901327`*^9}, {3.618485479644043*^9, 3.618485507259349*^9}, {
+  3.623319031942009*^9, 3.623319043251771*^9}}],
+
+Cell["\<\
+These sometimes need to be set, depending on the FreeSurfer installation:\
+\>", "Text",
+ CellChangeTimes->{{3.602347094258383*^9, 3.60234711247929*^9}, {
+  3.6270617369779253`*^9, 3.627061746809061*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"$FSAverage", "=", "\"\<<$SUBJECTS_DIR>/fsaverage\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"$FSAverageSym", "=", "\"\<<$SUBJECTS_DIR>/fsaverage_sym\>\""}], 
+   ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"CorticalColor", "[", 
+    RowBox[{"{", 
+     RowBox[{"\"\<MyEccentricity\>\"", ",", 
+      RowBox[{"Opacity", "\[Rule]", "opacity_"}]}], "}"}], "]"}], ":=", 
+   RowBox[{"Function", "[", 
+    RowBox[{
+     RowBox[{"{", "value", "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"Opacity", "[", "opacity", "]"}], ",", 
+       RowBox[{"Which", "[", 
+        RowBox[{
+         RowBox[{"value", "<", "0"}], ",", "Black", ",", 
+         RowBox[{"value", ">", "10"}], ",", "Cyan", ",", "True", ",", 
+         RowBox[{"Blend", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+            "White", ",", "Blue", ",", "Green", ",", "Red", ",", "Yellow"}], 
+            "}"}], ",", 
+           RowBox[{"value", "/", "10"}]}], "]"}]}], "]"}]}], "}"}]}], "]"}]}],
+   ";"}]}], "Input",
+ CellChangeTimes->{{3.618313027908025*^9, 3.61831304819163*^9}, {
+   3.61848598871939*^9, 3.618486052408984*^9}, {3.627061750020775*^9, 
+   3.627061755771504*^9}, {3.630086052940892*^9, 3.630086060818869*^9}, {
+   3.631017589643941*^9, 3.631017590023839*^9}, {3.6316455245124407`*^9, 
+   3.6316455281781693`*^9}, {3.6316457280122757`*^9, 3.631645737299904*^9}, 
+   3.631893818609898*^9, {3.632766716465643*^9, 3.632766739334042*^9}}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Utility Functions", "Subsection",
+ CellChangeTimes->{{3.6175362422803593`*^9, 3.617536244144053*^9}}],
+
+Cell["\<\
+There are utility functions that are not involved directly in template \
+fitting but that are occasionally useful for various tasks.
+Don\[CloseCurlyQuote]t worry about these much.\
+\>", "Text",
+ CellChangeTimes->{{3.6270618032663507`*^9, 3.627061836390874*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Automatic Caching", "Subsubsection",
+ CellChangeTimes->{{3.607950558488155*^9, 3.607950560353754*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Unprotect", "[", "AutoCache", "]"}], ";", 
+  RowBox[{"ClearAll", "[", "AutoCache", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"AutoCache", "::", "usage"}], "=", 
+   "\"\<AutoCache[filename, body] yields the result of evaluating body (which \
+is held) then saves the result using DumpSave into the given filename, which \
+is automatically given a \\\".mx\\\" extension. If the file already exists \
+when the funciton is called, then body is not evaulated and instead the \
+result saved in the filename is loaded.\nIf any messages are generaged during \
+the execution of body, the result is not cached and $Failed is \
+returned.\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"AutoCache", "::", "loadfail"}], "=", 
+   "\"\<Warning: Loading of cache file failed; recalculating and \
+overwriting...\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Begin", "[", "\"\<`Private`\>\"", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Attributes", "[", "AutoCache", "]"}], "=", 
+   RowBox[{"{", "HoldRest", "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"AutoCache", "[", 
+    RowBox[{"filename_", ",", "calc_"}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"flname", "=", 
+       RowBox[{"With", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"base", "=", 
+           RowBox[{"If", "[", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{"StringTake", "[", 
+                RowBox[{"filename", ",", "1"}], "]"}], "\[Equal]", 
+               "\"\</\>\""}], "||", 
+              RowBox[{
+               RowBox[{"StringTake", "[", 
+                RowBox[{"filename", ",", "1"}], "]"}], "\[Equal]", 
+               "\"\<~\>\""}]}], ",", "\[IndentingNewLine]", "filename", ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"FileNameJoin", "[", 
+              RowBox[{"{", 
+               RowBox[{"$CacheDir", ",", "filename"}], "}"}], "]"}]}], 
+            "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"StringTake", "[", 
+             RowBox[{"base", ",", 
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{"-", "3"}], ",", 
+                RowBox[{"-", "1"}]}], "}"}]}], "]"}], "\[Equal]", 
+            "\"\<.mx\>\""}], ",", "base", ",", 
+           RowBox[{"base", "<>", "\"\<.mx\>\""}]}], "]"}]}], "]"}]}], "}"}], 
+     ",", "\[IndentingNewLine]", 
+     RowBox[{"With", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"cachedOrFail", "=", 
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{"FileExistsQ", "[", "flname", "]"}], ",", 
+           "\[IndentingNewLine]", 
+           RowBox[{"With", "[", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{"cached", "=", 
+               RowBox[{"Block", "[", "\[IndentingNewLine]", 
+                RowBox[{
+                 RowBox[{"{", 
+                  RowBox[{
+                   RowBox[{"Global`dat", "=", "$Failed"}], ",", 
+                   RowBox[{"Global`Private`dat", "=", "$Failed"}]}], "}"}], 
+                 ",", 
+                 RowBox[{"Check", "[", "\[IndentingNewLine]", 
+                  RowBox[{
+                   RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"Get", "[", "flname", "]"}], ";", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"If", "[", 
+                    RowBox[{
+                    RowBox[{"Global`Private`dat", "===", "$Failed"}], ",", 
+                    "Global`dat", ",", "Global`Private`dat"}], "]"}]}], ")"}],
+                    ",", "\[IndentingNewLine]", "$Failed"}], "]"}]}], "]"}]}],
+               "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{
+              RowBox[{"If", "[", 
+               RowBox[{
+                RowBox[{"cached", "===", "$Failed"}], ",", 
+                "\[IndentingNewLine]", 
+                RowBox[{"Message", "[", 
+                 RowBox[{"AutoCache", "::", "loadfail"}], "]"}]}], "]"}], ";",
+               "\[IndentingNewLine]", "cached"}]}], "]"}], ",", 
+           "\[IndentingNewLine]", "$Failed"}], "]"}]}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"If", "[", 
+        RowBox[{
+         RowBox[{"cachedOrFail", "===", "$Failed"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Block", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"dat", "=", 
+             RowBox[{"Check", "[", 
+              RowBox[{"calc", ",", "$Failed"}], "]"}]}], "}"}], ",", 
+           RowBox[{
+            RowBox[{"If", "[", 
+             RowBox[{
+              RowBox[{"dat", "=!=", "$Failed"}], ",", 
+              RowBox[{"DumpSave", "[", 
+               RowBox[{"flname", ",", "dat"}], "]"}]}], "]"}], ";", "dat"}]}],
+           "]"}], ",", "\[IndentingNewLine]", "cachedOrFail"}], "]"}]}], 
+      "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Protect", "[", "AutoCache", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"End", "[", "]"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.607950562051906*^9, 3.607950602522336*^9}, {
+   3.6079506334691668`*^9, 3.60795066103251*^9}, {3.618053847125677*^9, 
+   3.6180538539900723`*^9}, {3.618053892277157*^9, 3.618053957652052*^9}, {
+   3.6180539989718733`*^9, 3.6180540994206257`*^9}, {3.6180541914811497`*^9, 
+   3.618054271391266*^9}, {3.618054309295753*^9, 3.618054519251204*^9}, {
+   3.618054561261284*^9, 3.618054650652027*^9}, {3.618056534148245*^9, 
+   3.618056597715819*^9}, {3.618056633488288*^9, 3.618056660543998*^9}, {
+   3.61805670420778*^9, 3.618056715370036*^9}, {3.61805720245496*^9, 
+   3.618057230962612*^9}, {3.6180575710903997`*^9, 3.618057572343364*^9}, {
+   3.624134981569817*^9, 3.624134988543984*^9}, {3.624136131985132*^9, 
+   3.624136132934326*^9}, {3.6241361650651207`*^9, 3.624136182570665*^9}, {
+   3.624136220762422*^9, 3.624136234778182*^9}, {3.624908755394726*^9, 
+   3.624908784995912*^9}, {3.627061854404253*^9, 3.627061856441153*^9}, 
+   3.632445005831705*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Unprotect", "[", "Temporarily", "]"}], ";", 
+  RowBox[{"ClearAll", "[", "Temporarily", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Temporarily", "::", "usage"}], "=", 
+   "\"\<Temporarily[assignments,body] must be constructed like a With, \
+Module, or Body clause; it yields the result of evaluating the given body \
+(which is held) with the given assignments bound; after the body is \
+evaluated, the right hand side of the assignments is unassigned using the \
+Unset[] function. You can put a non-memoizing function on the LHS of the \
+assignments, but it will generate a message.\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Begin", "[", "\"\<`Private`\>\"", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Attributes", "[", "Temporarily", "]"}], "=", 
+   RowBox[{"{", "HoldAll", "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Temporarily", "[", 
+    RowBox[{
+     RowBox[{"assignments", ":", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"Set", "[", 
+         RowBox[{"_Symbol", ",", "_"}], "]"}], ".."}], "}"}]}], ",", 
+     "body_"}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"result", "=", 
+       RowBox[{"With", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"code", "=", 
+           RowBox[{"Hold", "[", 
+            RowBox[{"assignments", ",", "body"}], "]"}]}], "}"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"With", "@@", "code"}]}], "]"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"ReleaseHold", "[", "\[IndentingNewLine]", 
+       RowBox[{"Replace", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"Hold", "[", "assignments", "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"HoldPattern", "[", 
+           RowBox[{"Set", "[", 
+            RowBox[{"_", ",", "v_"}], "]"}], "]"}], "\[RuleDelayed]", 
+          RowBox[{"Unset", "[", "v", "]"}]}], ",", "\[IndentingNewLine]", 
+         RowBox[{"{", "2", "}"}]}], "]"}], "]"}], ";", "\[IndentingNewLine]", 
+      "result"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Protect", "[", "Temporarily", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"End", "[", "]"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.618054142475527*^9, 3.61805415479731*^9}, {
+  3.618054755857527*^9, 3.618054758125304*^9}, {3.618054802331908*^9, 
+  3.618055017280405*^9}, {3.618055065208233*^9, 3.6180551771464243`*^9}, {
+  3.618055213448736*^9, 3.618055252626924*^9}, {3.618055283765318*^9, 
+  3.6180553198601*^9}, {3.618055366004554*^9, 3.6180554090709887`*^9}, {
+  3.61805562858994*^9, 3.61805567657703*^9}, {3.618055828342338*^9, 
+  3.6180558830005503`*^9}, {3.618055929600629*^9, 3.618055942486491*^9}, {
+  3.618057234836966*^9, 3.618057238856905*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Setting a variable only if the right side succeeds", "Subsubsection",
+ CellChangeTimes->{{3.6242981821755466`*^9, 3.624298190900983*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Unprotect", "[", "CarefulSet", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ClearAll", "[", "CarefulSet", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"CarefulSet", "::", "usage"}], "=", 
+   "\"\<CarefulSet[a,b] evaluates b and, if no messages are generated during \
+its evaluation and the result is not the same as $Failed, sets a to be equal \
+to the result and returns the result. If messages are generated then a is not \
+set and $Failed is returned.\nThe option Unprotect may be given in which case \
+the given symbol is unprotected prior to the set and reprotected after \
+it.\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Attributes", "[", "CarefulSet", "]"}], "=", 
+   RowBox[{"{", "HoldAll", "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Options", "[", "CarefulSet", "]"}], "=", 
+   RowBox[{"{", 
+    RowBox[{"Unprotect", "\[Rule]", "None"}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"CarefulSet", "[", 
+    RowBox[{"var_", ",", "body_", ",", 
+     RowBox[{"OptionsPattern", "[", "]"}]}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"res", "=", 
+        RowBox[{"Check", "[", 
+         RowBox[{"body", ",", "$Failed"}], "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"unp", "=", 
+        RowBox[{"OptionValue", "[", "Unprotect", "]"}]}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"res", "===", "$Failed"}], ",", "\[IndentingNewLine]", 
+       "$Failed", ",", "\[IndentingNewLine]", 
+       RowBox[{"If", "[", 
+        RowBox[{
+         RowBox[{"unp", "===", "None"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"Set", "[", 
+          RowBox[{"var", ",", "res"}], "]"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"Unprotect", "[", "unp", "]"}], ";", "\[IndentingNewLine]", 
+           RowBox[{"Set", "[", 
+            RowBox[{"var", ",", "res"}], "]"}], ";", "\[IndentingNewLine]", 
+           RowBox[{"Protect", "[", "unp", "]"}], ";", "\[IndentingNewLine]", 
+           "res"}], ")"}]}], "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Protect", "[", "CarefulSet", "]"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.624298193623332*^9, 3.624298324047825*^9}, {
+  3.625154068715742*^9, 3.6251540728108673`*^9}, {3.625154189417016*^9, 
+  3.625154290337954*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Unprotect", "[", "CarefulSetDelayed", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ClearAll", "[", "CarefulSetDelayed", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"CarefulSetDelayed", "::", "usage"}], "=", 
+   "\"\<CarefulSetDelayed[a,b] sets a using SetDelayed to evaluate b and, if \
+no messages are generated during its evaluation and the result is not the \
+same as $Failed, sets a to be equal to the result and returns the result. If \
+messages are generated then a is not set and $Failed is returned.\nThe option \
+Unprotect may be given in which case the given symbol is unprotected prior to \
+the set (but not the deyaled set) and reprotected after it.\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Attributes", "[", "CarefulSetDelayed", "]"}], "=", 
+   RowBox[{"{", "HoldAll", "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Options", "[", "CarefulSetDelayed", "]"}], "=", 
+   RowBox[{"{", 
+    RowBox[{"Unprotect", "\[Rule]", "None"}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"CarefulSetDelayed", "[", 
+    RowBox[{"var_", ",", "body_", ",", 
+     RowBox[{"OptionsPattern", "[", "]"}]}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"unp", "=", 
+       RowBox[{"OptionValue", "[", "Unprotect", "]"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"SetDelayed", "[", "\[IndentingNewLine]", 
+      RowBox[{"var", ",", "\[IndentingNewLine]", 
+       RowBox[{"With", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"res", "=", 
+           RowBox[{"Check", "[", 
+            RowBox[{"body", ",", "$Failed"}], "]"}]}], "}"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{"res", "===", "$Failed"}], ",", "\[IndentingNewLine]", 
+           "$Failed", ",", "\[IndentingNewLine]", 
+           RowBox[{"If", "[", 
+            RowBox[{
+             RowBox[{"unp", "===", "None"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"Set", "[", 
+              RowBox[{"var", ",", "res"}], "]"}], ",", "\[IndentingNewLine]", 
+             
+             RowBox[{"(", 
+              RowBox[{
+               RowBox[{"Unprotect", "[", "unp", "]"}], ";", 
+               "\[IndentingNewLine]", 
+               RowBox[{"Set", "[", 
+                RowBox[{"var", ",", "res"}], "]"}], ";", 
+               "\[IndentingNewLine]", 
+               RowBox[{"Protect", "[", "unp", "]"}], ";", 
+               "\[IndentingNewLine]", "res"}], ")"}]}], "]"}]}], "]"}]}], 
+        "]"}]}], "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Protect", "[", "CarefulSetDelayed", "]"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.624298447420739*^9, 3.624298523043364*^9}, {
+  3.625154301137226*^9, 3.625154360695562*^9}, {3.6251543920015*^9, 
+  3.6251544104922028`*^9}, {3.625154442829055*^9, 3.625154550733952*^9}}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Schira Model Functions", "Subsection",
+ CellChangeTimes->{{3.618435555448041*^9, 3.6184355642154284`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Choosing a Schira Model", "Subsubsection",
+ CellChangeTimes->{{3.618435571287964*^9, 3.6184355756964912`*^9}}],
+
+Cell["\<\
+This function can be used to explore possible configurations of the Schira \
+model parameters.
+It is used in the Minimization and Simulation section below.\
+\>", "Text",
+ CellChangeTimes->{{3.618435577901806*^9, 3.618435600061037*^9}, {
+  3.6270619217455482`*^9, 3.627061939809325*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Unprotect", "[", 
+   RowBox[{"ManipulateSchiraModel", ",", "FStatMin", ",", "InitialModel"}], 
+   "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ClearAll", "[", 
+   RowBox[{"ManipulateSchiraModel", ",", "FStatMin", ",", "InitialModel"}], 
+   "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"ManipulateSchiraModel", "::", "usage"}], "=", 
+   "\"\<ManipulateSchiraModel[sub,hemi] yields a Manipulate constuct that can \
+be used to explore Schira model parameters. The Schira line model is plotted \
+over the given subject/hemisphere's retinotopy. Options include \
+EvaluationMonitor, which is evaluated every time the Schira parameters are \
+changed with the variable model bound to the current Schira model, and \
+FStatMin, which specifies the minimum F-statistic to use when drawing the \
+retinotopy.\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"ManipulateSchiraModel", "::", "badarg"}], "=", 
+   "\"\<Bad argument given to ManipulateSchiraModel: `1`\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"FStatMin", "::", "usage"}], "=", 
+   "\"\<FStatMin is an option to ManipulateSchiraModel that specifies the \
+minimum F-statistic to use as a cutoff when displaying a subject's \
+retinotopy.\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"InitialModel", "::", "usage"}], "=", 
+    "\"\<InitialModel is an option to ManipulateSchiraModel that specifies a \
+SchiraModelObject from which to take the initial Manipulate parameter \
+positions.\>\""}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Begin", "[", "\"\<`Private`\>\"", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"FStatMin", "=", "FStatMin"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Unprotect", "[", "$DefaultInitialSchiraModel", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ClearAll", "[", "$DefaultInitialSchiraModel", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"$DefaultInitialSchiraModel", "=", 
+   RowBox[{"SchiraModel", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"A", "\[Rule]", "1.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"B", "\[Rule]", "20.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalLambda]", "\[Rule]", "1.0"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalPsi]", "\[Rule]", "0.8"}], ",", "\[IndentingNewLine]", 
+     
+     RowBox[{"V1Size", "\[Rule]", "1.1"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V2Size", "\[Rule]", "0.8"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V3Size", "\[Rule]", "0.5"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"HV4Size", "\[Rule]", "0.4"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V3ASize", "\[Rule]", "0.4"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Scale", "\[Rule]", "30.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Shear", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"1", ",", "0"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "0.35"}], ",", "1"}], "}"}]}], "}"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalRho]90", "\[Rule]", "90.0"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"FC", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"0.2", ",", 
+        RowBox[{"-", "0.3"}]}], "}"}]}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Options", "[", "ManipulateSchiraModel", "]"}], "=", 
+   RowBox[{"{", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"FStatMin", "\[Rule]", "0.5"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"EvaluationMonitor", "\[Rule]", "None"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"InitialModel", "\[Rule]", "$DefaultInitialSchiraModel"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"VisualAreas", "\[Rule]", "Automatic"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Curvature", "\[Rule]", "Automatic"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"\"\<EccentricitySchema\>\"", " ", "->", " ", 
+      RowBox[{"(", 
+       RowBox[{"{", 
+        RowBox[{"\"\<MyEccentricity\>\"", ",", 
+         RowBox[{"Opacity", "\[Rule]", "1"}]}], "}"}], ")"}]}]}], " ", 
+    "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"ManipulateSchiraModel", "[", 
+    RowBox[{
+     RowBox[{"map_", "?", "MapQ"}], ",", 
+     RowBox[{"OptionsPattern", "[", "]"}]}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"fStatMin", "=", 
+        RowBox[{"OptionValue", "[", "FStatMin", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"init", "=", 
+        RowBox[{"Replace", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"OptionValue", "[", "InitialModel", "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Except", "[", "_SchiraModelObject", "]"}], 
+            "\[RuleDelayed]", 
+            RowBox[{"Message", "[", "\[IndentingNewLine]", 
+             RowBox[{
+              RowBox[{"ManipulateSchiraModel", "::", "badarg"}], ",", 
+              "\[IndentingNewLine]", 
+              "\"\<InitialModel must be a SchiraModelObject\>\""}], "]"}]}], 
+           "}"}]}], "]"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"eval", "=", 
+        RowBox[{"Replace", "[", 
+         RowBox[{
+          RowBox[{"OptionValue", "[", "EvaluationMonitor", "]"}], ",", 
+          RowBox[{"None", "\[Rule]", "Identity"}]}], "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"areas", "=", 
+        RowBox[{"OptionValue", "[", "VisualAreas", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"curv", "=", 
+        RowBox[{"Replace", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"OptionValue", "[", "Curvature", "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"surf_", "?", "SurfaceQ"}], "\[RuleDelayed]", 
+             RowBox[{"Part", "[", 
+              RowBox[{
+               RowBox[{"Field", "[", "surf", "]"}], ",", 
+               RowBox[{"DomainIndices", "[", "map", "]"}]}], "]"}]}], ",", 
+            "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"m_", "?", "MapQ"}], "\[RuleDelayed]", 
+             RowBox[{"Field", "[", "m", "]"}]}], ",", "\[IndentingNewLine]", 
+            RowBox[{"Automatic", "\[RuleDelayed]", 
+             RowBox[{"Part", "[", 
+              RowBox[{
+               RowBox[{"Field", "[", "map", "]"}], ",", "All", ",", "4"}], 
+              "]"}]}], ",", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"l_List", "/;", 
+              RowBox[{
+               RowBox[{"Length", "[", "l", "]"}], "\[Equal]", 
+               RowBox[{"Length", "[", 
+                RowBox[{"Field", "[", "map", "]"}], "]"}]}]}], 
+             "\[RuleDelayed]", "l"}], ",", "\[IndentingNewLine]", 
+            RowBox[{"l_List", "\[RuleDelayed]", 
+             RowBox[{"l", "[", 
+              RowBox[{"[", 
+               RowBox[{"DomainIndices", "[", "map", "]"}], "]"}], "]"}]}]}], 
+           "}"}]}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"With", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"fixedMap", "=", 
+         RowBox[{"Rule", "[", "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{"MapThread", "[", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"Function", "[", "\[IndentingNewLine]", 
+              RowBox[{"If", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"!", 
+                  RowBox[{"NumberQ", "[", 
+                   RowBox[{"#", "[", 
+                    RowBox[{"[", "3", "]"}], "]"}], "]"}]}], "||", 
+                 RowBox[{
+                  RowBox[{"#", "[", 
+                   RowBox[{"[", "3", "]"}], "]"}], "<", "fStatMin"}]}], ",", 
+                "\[IndentingNewLine]", 
+                RowBox[{"{", 
+                 RowBox[{"None", ",", "None", ",", "None", ",", "#2"}], "}"}],
+                 ",", "\[IndentingNewLine]", 
+                RowBox[{"ReplacePart", "[", 
+                 RowBox[{"#1", ",", 
+                  RowBox[{"4", "\[Rule]", "#2"}]}], "]"}]}], "]"}], "]"}], 
+             ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"Field", "[", "map", "]"}], ",", "curv"}], "}"}]}], 
+            "]"}], ",", "\[IndentingNewLine]", "map"}], "]"}]}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"With", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"plotRange", "=", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"Min", "@", "#"}], ",", 
+               RowBox[{"Max", "@", "#"}]}], "}"}], "&"}], "/@", 
+            RowBox[{"Transpose", "[", 
+             RowBox[{"VertexList", "[", "map", "]"}], "]"}]}]}], "}"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"With", "[", "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"paPlot", "=", 
+              RowBox[{"Image", "[", "\[IndentingNewLine]", 
+               RowBox[{
+                RowBox[{"MapPlot", "[", "\[IndentingNewLine]", 
+                 RowBox[{"fixedMap", ",", "\[IndentingNewLine]", 
+                  RowBox[{"ColorFunctionScaling", "\[Rule]", "False"}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"ColorFunction", "\[Rule]", 
+                   RowBox[{"ColorCortex", "[", 
+                    RowBox[{
+                    RowBox[{"1", "\[Rule]", "PolarAngle"}], ",", 
+                    RowBox[{"4", "\[Rule]", "Curvature"}]}], "]"}]}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"Axes", "\[Rule]", "None"}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"PlotRange", "\[Rule]", "plotRange"}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"ImageSize", "\[Rule]", 
+                   RowBox[{"5", "*", "72"}]}], ",", "\[IndentingNewLine]", 
+                  RowBox[{"AspectRatio", "\[Rule]", "1"}]}], "]"}], ",", 
+                "\[IndentingNewLine]", 
+                RowBox[{"ImageResolution", "\[Rule]", "200"}]}], "]"}]}], ",",
+              "\[IndentingNewLine]", 
+             RowBox[{"ecPlot", "=", 
+              RowBox[{"Image", "[", "\[IndentingNewLine]", 
+               RowBox[{
+                RowBox[{"MapPlot", "[", "\[IndentingNewLine]", 
+                 RowBox[{"fixedMap", ",", "\[IndentingNewLine]", 
+                  RowBox[{"ColorFunctionScaling", "\[Rule]", "False"}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"ColorFunction", "\[Rule]", 
+                   RowBox[{"ColorCortex", "[", 
+                    RowBox[{
+                    RowBox[{"2", "\[Rule]", 
+                    RowBox[{
+                    "OptionValue", "[", "\"\<EccentricitySchema\>\"", "]"}]}],
+                     ",", 
+                    RowBox[{"4", "\[Rule]", "Curvature"}]}], "]"}]}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"Axes", "\[Rule]", "None"}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"PlotRange", "\[Rule]", "plotRange"}], ",", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"ImageSize", "\[Rule]", 
+                   RowBox[{"5", "*", "72"}]}], ",", "\[IndentingNewLine]", 
+                  RowBox[{"AspectRatio", "\[Rule]", "1"}]}], "]"}], ",", 
+                "\[IndentingNewLine]", 
+                RowBox[{"ImageResolution", "\[Rule]", "200"}]}], "]"}]}], ",",
+              "\[IndentingNewLine]", 
+             RowBox[{"range", "=", 
+              RowBox[{"Table", "[", "\[IndentingNewLine]", 
+               RowBox[{
+                RowBox[{"{", 
+                 RowBox[{
+                  RowBox[{"Min", "[", 
+                   RowBox[{
+                    RowBox[{"VertexList", "[", "map", "]"}], "[", 
+                    RowBox[{"[", 
+                    RowBox[{"All", ",", "k"}], "]"}], "]"}], "]"}], ",", 
+                  RowBox[{"Max", "[", 
+                   RowBox[{
+                    RowBox[{"VertexList", "[", "map", "]"}], "[", 
+                    RowBox[{"[", 
+                    RowBox[{"All", ",", "k"}], "]"}], "]"}], "]"}]}], "}"}], 
+                ",", "\[IndentingNewLine]", 
+                RowBox[{"{", 
+                 RowBox[{"k", ",", 
+                  RowBox[{"{", 
+                   RowBox[{"1", ",", "2"}], "}"}]}], "}"}]}], "]"}]}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"imgsz", "=", 
+              RowBox[{
+               RowBox[{"plotRange", "[", 
+                RowBox[{"[", 
+                 RowBox[{"1", ",", "2"}], "]"}], "]"}], "-", 
+               RowBox[{"plotRange", "[", 
+                RowBox[{"[", 
+                 RowBox[{"1", ",", "1"}], "]"}], "]"}]}]}]}], "}"}], ",", 
+           "\[IndentingNewLine]", 
+           RowBox[{"Manipulate", "[", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"With", "[", "\[IndentingNewLine]", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"model", "=", 
+                 RowBox[{"SchiraModel", "[", "\[IndentingNewLine]", 
+                  RowBox[{
+                   RowBox[{"A", "\[Rule]", "a"}], ",", 
+                   RowBox[{"B", "\[Rule]", "b"}], ",", 
+                   RowBox[{"\[CapitalLambda]", "\[Rule]", "\[Lambda]"}], ",", 
+                   
+                   RowBox[{"Scale", "\[Rule]", "k"}], ",", 
+                   "\[IndentingNewLine]", 
+                   RowBox[{"V1Size", "\[Rule]", "v1size"}], ",", 
+                   RowBox[{"V2Size", "\[Rule]", "v2size"}], ",", 
+                   RowBox[{"V3Size", "\[Rule]", "v3size"}], ",", 
+                   RowBox[{"HV4Size", "\[Rule]", "hv4size"}], ",", 
+                   RowBox[{"V3ASize", "\[Rule]", "v3asize"}], ",", 
+                   "\[IndentingNewLine]", 
+                   RowBox[{"\[CapitalPsi]", "\[Rule]", "\[Psi]"}], ",", 
+                   RowBox[{"Shear", "\[Rule]", 
+                    RowBox[{"{", 
+                    RowBox[{
+                    RowBox[{"{", 
+                    RowBox[{"1", ",", "shearx"}], "}"}], ",", 
+                    RowBox[{"{", 
+                    RowBox[{"sheary", ",", "1"}], "}"}]}], "}"}]}], ",", 
+                   RowBox[{"FC", "\[Rule]", 
+                    RowBox[{"{", 
+                    RowBox[{"fcx", ",", "fcy"}], "}"}]}], ",", 
+                   RowBox[{"\[CapitalRho]90", "\[Rule]", "\[Rho]90"}]}], 
+                  "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+               RowBox[{
+                RowBox[{"eval", "[", "model", "]"}], ";", 
+                "\[IndentingNewLine]", 
+                RowBox[{"GraphicsRow", "[", "\[IndentingNewLine]", 
+                 RowBox[{"{", 
+                  RowBox[{
+                   RowBox[{"SchiraLinePlot", "[", "\[IndentingNewLine]", 
+                    RowBox[{"model", ",", "\[IndentingNewLine]", 
+                    RowBox[{"EccentricityLines", "\[Rule]", "None"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"VisualAreas", "\[Rule]", "areas"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"Prolog", "\[Rule]", 
+                    RowBox[{"If", "[", 
+                    RowBox[{"showPlots", ",", 
+                    RowBox[{"{", 
+                    RowBox[{"Inset", "[", 
+                    RowBox[{"paPlot", ",", 
+                    RowBox[{"{", 
+                    RowBox[{"0", ",", "0"}], "}"}], ",", 
+                    RowBox[{"ImageScaled", "[", 
+                    RowBox[{"{", 
+                    RowBox[{"0.5", ",", "0.5"}], "}"}], "]"}], ",", "imgsz"}],
+                     "]"}], "}"}], ",", 
+                    RowBox[{"{", "}"}]}], "]"}]}], ",", "\[IndentingNewLine]", 
+                    RowBox[{"Axes", "\[Rule]", "None"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"PlotRange", "\[Rule]", "plotRange"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"ImageSize", "\[Rule]", 
+                    RowBox[{"5", "*", "72"}]}], ",", "\[IndentingNewLine]", 
+                    RowBox[{"AspectRatio", "\[Rule]", "1"}]}], "]"}], ",", 
+                   "\[IndentingNewLine]", 
+                   RowBox[{"SchiraLinePlot", "[", "\[IndentingNewLine]", 
+                    RowBox[{"model", ",", "\[IndentingNewLine]", 
+                    RowBox[{"PolarAngleLines", "\[Rule]", "None"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"VisualAreas", "\[Rule]", "areas"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"Prolog", "\[Rule]", 
+                    RowBox[{"If", "[", 
+                    RowBox[{"showPlots", ",", 
+                    RowBox[{"{", 
+                    RowBox[{"Inset", "[", 
+                    RowBox[{"ecPlot", ",", 
+                    RowBox[{"{", 
+                    RowBox[{"0", ",", "0"}], "}"}], ",", 
+                    RowBox[{"ImageScaled", "[", 
+                    RowBox[{"{", 
+                    RowBox[{"0.5", ",", "0.5"}], "}"}], "]"}], ",", "imgsz"}],
+                     "]"}], "}"}], ",", 
+                    RowBox[{"{", "}"}]}], "]"}]}], ",", "\[IndentingNewLine]", 
+                    RowBox[{"Axes", "\[Rule]", "None"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"PlotRange", "\[Rule]", "plotRange"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"ImageSize", "\[Rule]", 
+                    RowBox[{"5", "*", "72"}]}], ",", "\[IndentingNewLine]", 
+                    RowBox[{"AspectRatio", "\[Rule]", "1"}], ",", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"EccentricityStyleFunction", "\[Rule]", 
+                    RowBox[{"ColorCortex", "[", 
+                    RowBox[{
+                    "OptionValue", "[", "\"\<EccentricitySchema\>\"", "]"}], 
+                    "]"}]}]}], "]"}]}], "}"}], "]"}]}]}], "]"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"a", ",", 
+                 RowBox[{"init", "[", "A", "]"}]}], "}"}], ",", "0.1", ",", 
+               "50", ",", "0.01"}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"b", ",", 
+                 RowBox[{"init", "[", "B", "]"}]}], "}"}], ",", "1", ",", 
+               "500", ",", "0.1"}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"\[Lambda]", ",", 
+                 RowBox[{"init", "[", "\[CapitalLambda]", "]"}]}], "}"}], ",",
+                "0", ",", "10", ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"k", ",", 
+                 RowBox[{"Mean", "[", 
+                  RowBox[{"Abs", "[", 
+                   RowBox[{"init", "[", "Scale", "]"}], "]"}], "]"}]}], "}"}],
+                ",", "0.1", ",", 
+               RowBox[{"Max", "[", 
+                RowBox[{"range", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"All", ",", "2"}], "]"}], "]"}], "]"}], ",", 
+               "0.01"}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"v1size", ",", 
+                 RowBox[{"init", "[", "V1Size", "]"}]}], "}"}], ",", "0.1", 
+               ",", 
+               RowBox[{"Pi", "/", "2"}], ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"v2size", ",", 
+                 RowBox[{"init", "[", "V2Size", "]"}]}], "}"}], ",", "0.1", 
+               ",", 
+               RowBox[{"Pi", "/", "2"}], ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"v3size", ",", 
+                 RowBox[{"init", "[", "V3Size", "]"}]}], "}"}], ",", "0.1", 
+               ",", 
+               RowBox[{"Pi", "/", "2"}], ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"hv4size", ",", 
+                 RowBox[{"init", "[", "HV4Size", "]"}]}], "}"}], ",", "0.1", 
+               ",", 
+               RowBox[{"Pi", "/", "2"}], ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"v3asize", ",", 
+                 RowBox[{"init", "[", "V3ASize", "]"}]}], "}"}], ",", "0.1", 
+               ",", 
+               RowBox[{"Pi", "/", "2"}], ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"\[Psi]", ",", 
+                 RowBox[{"init", "[", "\[CapitalPsi]", "]"}]}], "}"}], ",", 
+               RowBox[{"-", "Pi"}], ",", "Pi", ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"shearx", ",", 
+                 RowBox[{
+                  RowBox[{"init", "[", "Shear", "]"}], "[", 
+                  RowBox[{"[", 
+                   RowBox[{"1", ",", "2"}], "]"}], "]"}]}], "}"}], ",", 
+               RowBox[{"-", "1"}], ",", "1", ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"sheary", ",", 
+                 RowBox[{
+                  RowBox[{"init", "[", "Shear", "]"}], "[", 
+                  RowBox[{"[", 
+                   RowBox[{"2", ",", "1"}], "]"}], "]"}]}], "}"}], ",", 
+               RowBox[{"-", "1"}], ",", "1", ",", "0.01"}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"fcx", ",", 
+                 RowBox[{
+                  RowBox[{"init", "[", "FC", "]"}], "[", 
+                  RowBox[{"[", "1", "]"}], "]"}]}], "}"}], ",", 
+               RowBox[{"range", "[", 
+                RowBox[{"[", 
+                 RowBox[{"1", ",", "1"}], "]"}], "]"}], ",", 
+               RowBox[{"range", "[", 
+                RowBox[{"[", 
+                 RowBox[{"1", ",", "2"}], "]"}], "]"}], ",", 
+               RowBox[{
+                RowBox[{"range", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"1", ",", "2"}], "]"}], "]"}], "-", 
+                RowBox[{
+                 RowBox[{"range", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"1", ",", "1"}], "]"}], "]"}], "/", "1000.0"}]}]}],
+               "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"fcy", ",", 
+                 RowBox[{
+                  RowBox[{"init", "[", "FC", "]"}], "[", 
+                  RowBox[{"[", "2", "]"}], "]"}]}], "}"}], ",", 
+               RowBox[{"range", "[", 
+                RowBox[{"[", 
+                 RowBox[{"2", ",", "1"}], "]"}], "]"}], ",", 
+               RowBox[{"range", "[", 
+                RowBox[{"[", 
+                 RowBox[{"2", ",", "2"}], "]"}], "]"}], ",", 
+               RowBox[{
+                RowBox[{"range", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"2", ",", "2"}], "]"}], "]"}], "-", 
+                RowBox[{
+                 RowBox[{"range", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"2", ",", "1"}], "]"}], "]"}], "/", "1000.0"}]}]}],
+               "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"\[Rho]90", ",", 
+                 RowBox[{"init", "[", "\[CapitalRho]90", "]"}]}], "}"}], ",", 
+               "1", ",", "180"}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"showPlots", ",", "True"}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"True", ",", "False"}], "}"}]}], "}"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"SynchronousUpdating", "\[Rule]", "False"}]}], "]"}]}], 
+          "]"}]}], "]"}]}], "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Protect", "[", 
+   RowBox[{
+   "ManipulateSchiraModel", ",", "FStatMin", ",", "InitialModel", ",", 
+    "$DefaultInitialSchiraModel"}], "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"End", "[", "]"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.618348255734325*^9, 3.618348560194254*^9}, {
+   3.6183486285819674`*^9, 3.618348699810749*^9}, {3.618348750320109*^9, 
+   3.618348750736113*^9}, {3.618348785333886*^9, 3.618348811562385*^9}, {
+   3.6183488944763927`*^9, 3.6183489209684467`*^9}, {3.6183490130884647`*^9, 
+   3.618349354351416*^9}, {3.6183627631831713`*^9, 3.618362867009088*^9}, {
+   3.618362970460181*^9, 3.618362981370129*^9}, {3.618363021248425*^9, 
+   3.6183631174767237`*^9}, 3.618363210364059*^9, {3.61836329508992*^9, 
+   3.618363327287939*^9}, {3.618363479744343*^9, 3.61836348741903*^9}, {
+   3.618363533102158*^9, 3.61836353475355*^9}, {3.618363568364523*^9, 
+   3.6183636015352697`*^9}, {3.618364021554372*^9, 3.618364023855854*^9}, {
+   3.618364375334237*^9, 3.6183644087115307`*^9}, {3.618364462365571*^9, 
+   3.618364473547961*^9}, {3.618364617226665*^9, 3.618364622945195*^9}, {
+   3.61836518395191*^9, 3.618365219639408*^9}, {3.618365324971012*^9, 
+   3.618365347863606*^9}, {3.618365421762601*^9, 3.6183654538858747`*^9}, {
+   3.61836553321595*^9, 3.618365583634563*^9}, {3.618365724328582*^9, 
+   3.6183657486896477`*^9}, {3.618365782928043*^9, 3.618365818413705*^9}, {
+   3.6183659761696167`*^9, 3.6183659779346*^9}, {3.61836613799378*^9, 
+   3.6183661896684713`*^9}, {3.618366593035428*^9, 3.618366601459154*^9}, {
+   3.6183666659612017`*^9, 3.618366676640876*^9}, {3.6183672284601107`*^9, 
+   3.6183672507335463`*^9}, {3.6184008194051113`*^9, 3.618400872797679*^9}, {
+   3.61840159668321*^9, 3.618401597823101*^9}, {3.618402319655394*^9, 
+   3.618402326280634*^9}, {3.618403057961418*^9, 3.61840305898563*^9}, {
+   3.618403922155624*^9, 3.618403976774425*^9}, {3.618404192194685*^9, 
+   3.6184042204915237`*^9}, {3.61840484937743*^9, 3.618405256623597*^9}, {
+   3.6184060541134453`*^9, 3.6184060672241096`*^9}, {3.61840611971544*^9, 
+   3.61840614475581*^9}, {3.618406202258771*^9, 3.618406229232386*^9}, {
+   3.618407510507711*^9, 3.618407610050028*^9}, {3.618407656996038*^9, 
+   3.6184076772686443`*^9}, {3.6184079626848516`*^9, 
+   3.6184079677994223`*^9}, {3.6184082292586403`*^9, 3.61840823258391*^9}, {
+   3.6184099282739964`*^9, 3.6184099309191313`*^9}, {3.618411013328032*^9, 
+   3.618411015007956*^9}, {3.6184169646632547`*^9, 3.6184169712853317`*^9}, {
+   3.618421015655714*^9, 3.618421023963743*^9}, {3.618430561628572*^9, 
+   3.6184308327413197`*^9}, {3.618430899869595*^9, 3.6184309346237783`*^9}, {
+   3.6184310215843077`*^9, 3.6184310352727337`*^9}, 3.618431068067*^9, {
+   3.618431100103223*^9, 3.618431122277643*^9}, {3.6184311667728243`*^9, 
+   3.6184311950356073`*^9}, 3.618431413470647*^9, {3.618431462836466*^9, 
+   3.618431468871428*^9}, {3.6184315084819717`*^9, 3.618431509282301*^9}, {
+   3.6184315494359093`*^9, 3.618431552482223*^9}, {3.618431611736264*^9, 
+   3.618431615425264*^9}, {3.618431708800331*^9, 3.618431751484023*^9}, {
+   3.618431793021802*^9, 3.618431803170126*^9}, {3.6184318578753223`*^9, 
+   3.618431886084669*^9}, {3.618432663375334*^9, 3.618432679692626*^9}, {
+   3.618433161548274*^9, 3.618433162208294*^9}, {3.621423151724629*^9, 
+   3.621423179780829*^9}, {3.6214250937472982`*^9, 3.621425100503132*^9}, {
+   3.621425264655259*^9, 3.621425378838447*^9}, {3.621425410517988*^9, 
+   3.6214254202111273`*^9}, {3.621435209074514*^9, 3.6214352102557573`*^9}, {
+   3.621460856356658*^9, 3.6214609066190977`*^9}, 3.622464078770216*^9, {
+   3.630255672397462*^9, 3.630255676044244*^9}, 3.630945369163967*^9, 
+   3.630945934561056*^9, 3.631017607605997*^9, {3.63101784013231*^9, 
+   3.631017840718238*^9}, 3.631018258164091*^9, {3.6310183104534073`*^9, 
+   3.6310183312537613`*^9}, {3.631019169937841*^9, 3.631019176696321*^9}, {
+   3.631020741735632*^9, 3.631020742828916*^9}, {3.631021016619525*^9, 
+   3.6310210188891582`*^9}, {3.631021730352384*^9, 3.631021758226673*^9}, 
+   3.631021841972101*^9, 3.6310218929589577`*^9, 3.631022296078815*^9, 
+   3.631022549284284*^9, {3.631023539402996*^9, 3.631023555930475*^9}, 
+   3.6318963238576393`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"$DefaultInitialSchiraModel", "=", 
+   RowBox[{"SchiraModel", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"A", "\[Rule]", "1.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"B", "\[Rule]", "20.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalLambda]", "\[Rule]", "1.0"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalPsi]", "\[Rule]", "0.8"}], ",", "\[IndentingNewLine]", 
+     
+     RowBox[{"V1Size", "\[Rule]", "1.1"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V2Size", "\[Rule]", "0.8"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V3Size", "\[Rule]", "0.5"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"HV4Size", "\[Rule]", "0.4"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V3ASize", "\[Rule]", "0.4"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Scale", "\[Rule]", "30.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Shear", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"1", ",", "0"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "0.35"}], ",", "1"}], "}"}]}], "}"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalRho]90", "\[Rule]", "90.0"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"FC", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"0.2", ",", 
+        RowBox[{"-", "0.3"}]}], "}"}]}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.622465901672957*^9, 3.622465907086526*^9}}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Registration/Prediction", "Subsection",
+ CellChangeTimes->{{3.612606598367179*^9, 3.612606601588439*^9}, {
+  3.626631708207699*^9, 3.6266317106341143`*^9}}],
+
+Cell["\<\
+Given a map (which is just a flattened projection of the spherical surface of \
+a hemisphere) and a model, a registration of that map is a rearrangement of \
+the vertices in the map such that they fit the given model.
+A prediction can be obtained from a registration by assigning each vertex in \
+the registration a value according to the model (which predicts a value \
+according to position on the cortical surface) then reverting the vertices \
+with their predicted values to their positions in the original map.\
+\>", "Text",
+ CellChangeTimes->{{3.627061964064725*^9, 3.62706210518997*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Convert a registration to a prediction", "Subsubsection",
+ CellChangeTimes->{{3.626631716107358*^9, 3.626631724482613*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"RegistrationToPrediction", "[", 
+    RowBox[{"reg_List", ",", "mdl_SchiraModelObject"}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"ifn", "=", 
+       RowBox[{"mdl", "[", "CorticalMapToRetinotopy", "]"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Map", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"pt", "\[Function]", 
+        RowBox[{"With", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"val", "=", 
+            RowBox[{"Quiet", "[", 
+             RowBox[{"ifn", "[", 
+              RowBox[{
+               RowBox[{"pt", "[", 
+                RowBox[{"[", "1", "]"}], "]"}], ",", 
+               RowBox[{"pt", "[", 
+                RowBox[{"[", "2", "]"}], "]"}]}], "]"}], "]"}]}], "}"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"If", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"ListQ", "[", "val", "]"}], "&&", 
+             RowBox[{
+              RowBox[{"val", "[", 
+               RowBox[{"[", "2", "]"}], "]"}], "\[LessEqual]", "90.0"}], "&&", 
+             RowBox[{"val", "\[NotEqual]", 
+              RowBox[{"{", 
+               RowBox[{"90", ",", "0", ",", "0"}], "}"}]}]}], ",", "val", ",", 
+            RowBox[{"{", 
+             RowBox[{"None", ",", "None", ",", "None"}], "}"}]}], "]"}]}], 
+         "]"}]}], ",", "\[IndentingNewLine]", "reg"}], "]"}]}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.612606518940052*^9, 3.612606570022312*^9}, {
+   3.621703902048794*^9, 3.621703950232191*^9}, {3.621704006637445*^9, 
+   3.6217040148887577`*^9}, 3.621861325694203*^9, {3.621861368324628*^9, 
+   3.6218614207024612`*^9}, {3.621886092168285*^9, 3.6218861116802597`*^9}, {
+   3.6218863001043797`*^9, 3.621886335778184*^9}, 3.622478053823152*^9}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Load Subject Retinotopy Data", "Section",
+ CellChangeTimes->{{3.612532276916048*^9, 3.612532280191511*^9}, {
+  3.627064657239861*^9, 3.627064660980315*^9}}],
+
+Cell[TextData[{
+ "Some notes about surfaces, maps, and fields:\n\nThe MmaSurfer library is \
+organized around surfaces, maps, and fields. Surfaces are meshes like the \
+pial, white matter, inflated, or spherical surfaces from FreeSurfer. Maps are \
+projections of a spherical surface to a 2D map. Both surfaces and maps can \
+have fields, which are basically overlays. A field is just a list with the \
+same number of elements as there are vertices in your surface or map. Each \
+surface or map usually has a field automatically (though it may just be \
+{None, None, None...}) that can be found via Field[surf] or Field[map]. \
+FSAverageSymCurvature, for example, has a field in which each vertex is \
+labeled by the curvature at that vertex.\n\nTo assign a field to a surface or \
+map Q, there are two mechanisms. The surface/map Q itself cannot be modified \
+(at least not easily), but the construct Rule[field, Q] (or, identically: \
+field -> Q) is automatically interpreted as the surface Q with the given \
+field (regardless of whether Q already had a field --- if so the old one is \
+ignored). Additionally, the function WithField[Q, field] yields a new map or \
+surface identical to Q but with the given field.\n\nNote that maps and \
+surfaces are represented as symbols to which various data are attached via ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ ", so if you want to see the data associated with a map or surface Q, \
+evaluating Q will probably just give you a response like \
+\[OpenCurlyDoubleQuote]surf119\[CloseCurlyDoubleQuote] or \
+\[OpenCurlyDoubleQuote]map23\[CloseCurlyDoubleQuote]. To see the field, \
+vertex list, etc., you\[CloseCurlyQuote]ll need to use Field[Q], \
+VertexList[Q], etc."
+}], "Text",
+ CellChangeTimes->{{3.6270622992427387`*^9, 3.6270626119094257`*^9}, {
+  3.627062647915574*^9, 3.6270626947912817`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Convenient Aliases", "Subsection",
+ CellChangeTimes->{{3.612532363015071*^9, 3.612532365196741*^9}}],
+
+Cell["\<\
+The map variable is just a convenient reference. We construct the map by \
+projecting the fsaverage_sym spherical hemisphere (FSAverageSymSphereSurface) \
+using the occipital pole (FSAverageSymSphereOP). We use the surface \
+FSAverageSymCurvature -> FSAverageSymSphereSurface because it will include \
+the curvature data as a field. In the future, we can duplicate this map for \
+any fsaverage_sym sphere: newMap = SurfaceProjection[someOtherSymSurface, \
+Duplicate -> map];
+
+Note that we use a map := Set[map, <body>] notation instead of map = <body>. \
+This is used throughout the notebook. It allows map to be fully defined \
+without actually running any serious calculation. When map is requested, \
+however, it will calculate the value of map and save it to map. There\
+\[CloseCurlyQuote]s no equivalent of this in matlab, but it would be \
+something like this:
+function x = map()
+  persistent savedVal;
+  if (isempty(savedVal))
+    savedVal = <body>;
+  end
+  x = savedVal;
+end\
+\>", "Text",
+ CellChangeTimes->{{3.6270622244973593`*^9, 3.627062258150642*^9}, {
+  3.627062714922511*^9, 3.627062756108788*^9}, {3.627062792846478*^9, 
+  3.6270630696240053`*^9}, {3.627063103211981*^9, 3.627063107915797*^9}, {
+  3.6270631646896563`*^9, 3.627063253353191*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.60674821686768*^9, 3.606748272034893*^9}, {
+   3.606776497248856*^9, 3.606776502902213*^9}, {3.606776564789977*^9, 
+   3.606776577021982*^9}, {3.6069176062372713`*^9, 3.60691761179426*^9}, 
+   3.606917686379348*^9, {3.607185131760788*^9, 3.607185132114252*^9}, {
+   3.612532378407865*^9, 3.612532382273837*^9}, {3.612533067989524*^9, 
+   3.6125330681567707`*^9}, {3.627062265178108*^9, 3.6270622737263536`*^9}, {
+   3.627062742119822*^9, 3.627062742725425*^9}, 3.631645845201613*^9, {
+   3.6316458971235237`*^9, 3.631645898832592*^9}, 3.631645949573863*^9, {
+   3.63164598470702*^9, 3.6316459970951138`*^9}, {3.631646032789713*^9, 
+   3.631646104203506*^9}, {3.631646936667986*^9, 3.631646952874332*^9}, {
+   3.6316472034466667`*^9, 3.631647218376766*^9}, {3.631883268709463*^9, 
+   3.6318832699284554`*^9}, {3.6318855788064737`*^9, 
+   3.6318855872653217`*^9}, {3.631889106495594*^9, 3.631889121796617*^9}, {
+   3.632053662042549*^9, 3.632053662335291*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["The Subjects Themselves", "Subsection",
+ CellChangeTimes->{{3.612532390308444*^9, 3.6125323930663147`*^9}}],
+
+Cell["\<\
+Here we declare some subjects; FreeSurfer subjects are just strings, which \
+must represent the FreeSurfer subject directory for each subject.
+These are the subjects used in the template fitting project:\
+\>", "Text",
+ CellChangeTimes->{{3.6270632659448147`*^9, 3.627063324479042*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"aggSubjects", "=", 
+    RowBox[{"Map", "[", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"FileNameJoin", "[", 
+        RowBox[{"{", 
+         RowBox[{
+         "\"\</Applications\>\"", ",", "\"\<freesurfer\>\"", ",", 
+          "\"\<subjects\>\"", ",", "#"}], "}"}], "]"}], "&"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"{", "\"\<<subject_name>\>\"", "}"}]}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6067598631161413`*^9, 3.606759866457405*^9}, {
+   3.606759954711528*^9, 3.6067600633072042`*^9}, {3.606760093590494*^9, 
+   3.606760120908683*^9}, {3.606760169240951*^9, 3.606760171490293*^9}, {
+   3.606760207584874*^9, 3.6067602148337727`*^9}, {3.606760255370129*^9, 
+   3.6067602985822287`*^9}, {3.606760422019784*^9, 3.606760464592681*^9}, {
+   3.6067605548383713`*^9, 3.6067605771819572`*^9}, {3.607182483898986*^9, 
+   3.607182491188917*^9}, {3.6071825972849007`*^9, 3.60718263801474*^9}, {
+   3.612532399958489*^9, 3.612532401002018*^9}, {3.6232640539851913`*^9, 
+   3.623264074096221*^9}, {3.623319213786213*^9, 3.623319229690679*^9}, {
+   3.629830046377307*^9, 3.629830063884424*^9}, {3.630085735825693*^9, 
+   3.630085773325609*^9}, {3.630086206039344*^9, 3.6300862958005466`*^9}, {
+   3.630162695924694*^9, 3.630162696186943*^9}, {3.630166731668599*^9, 
+   3.630166750046386*^9}, 3.631392410351036*^9, {3.632167126451922*^9, 
+   3.632167126740518*^9}, {3.6327667003394213`*^9, 3.632766702873023*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.6126979569700317`*^9, 3.612698039905346*^9}, {
+  3.623264084038538*^9, 3.6232640979016953`*^9}, {3.623319220526237*^9, 
+  3.623319234015876*^9}, {3.630085806730542*^9, 3.630085807863975*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Subject-specific Data", "Subsection",
+ CellChangeTimes->{{3.606776303123493*^9, 3.606776307633453*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Subjects Data and Metadata", "Subsubsection",
+ CellChangeTimes->{{3.612549450911645*^9, 3.612549455047496*^9}, {
+  3.623263865025938*^9, 3.623263865949576*^9}}],
+
+Cell[TextData[{
+ "Note that if, for some sybol, for example f, the construct f::usage is \
+defined, then you can run ?f to see the usage text.\nAll builtin ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " functions have usages defined.\nFor example:\n?PrincipalComponents\n?Solve\
+\n?SubjectName (below)"
+}], "Text",
+ CellChangeTimes->{{3.627063409300877*^9, 3.627063518106304*^9}, {
+  3.6270635566985493`*^9, 3.6270635623601313`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"SubjectName", "::", "usage"}], "=", 
+   "\"\<SubjectName[sub] yields the name (ie, deepest directory name) of the \
+given subject (which must be the full or relative path of a FreeSurfer \
+directory).\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"SubjectName", "[", "sub_String", "]"}], ":=", 
+    RowBox[{"Last", "[", 
+     RowBox[{"StringSplit", "[", 
+      RowBox[{"sub", ",", "\"\</\>\""}], "]"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.606776186410954*^9, 3.6067762018306*^9}, {
+  3.627063345528276*^9, 3.627063383352013*^9}, {3.632053683325809*^9, 
+  3.632053683445547*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"SubNativeCurv", "[", 
+     RowBox[{"sub_String", ",", 
+      RowBox[{"hemi", ":", 
+       RowBox[{"(", 
+        RowBox[{"LH", "|", "RH"}], ")"}]}]}], "]"}], ":=", 
+    RowBox[{"With", "[", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"res", "=", 
+        RowBox[{"Check", "[", 
+         RowBox[{
+          RowBox[{"Field", "[", 
+           RowBox[{"SubjectCurvature", "[", 
+            RowBox[{"sub", ",", "hemi"}], "]"}], "]"}], ",", "$Failed"}], 
+         "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{"res", "===", "$Failed"}], ",", "res", ",", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"SubNativeCurv", "[", 
+           RowBox[{"sub", ",", "hemi"}], "]"}], "=", "res"}], ")"}]}], 
+       "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"SubField", "[", 
+     RowBox[{"sub_String", ",", "hemi_"}], "]"}], ":=", 
+    RowBox[{"With", "[", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"hemstr", "=", 
+         RowBox[{"hemi", "/.", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"LH", "\[Rule]", "\"\<mh\>\""}], ",", 
+            RowBox[{"RH", "\[Rule]", "\"\<mh\>\""}]}], "}"}]}]}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"name", "=", 
+         RowBox[{"SubjectName", "[", "sub", "]"}]}]}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Transpose", "[", "\[IndentingNewLine]", 
+       RowBox[{"Append", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"Map", "[", "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"First", "[", 
+             RowBox[{"Surfaces", "[", 
+              RowBox[{"Import", "[", 
+               RowBox[{
+                RowBox[{"StringJoin", "@@", "#"}], ",", "\"\<MGH\>\""}], 
+               "]"}], "]"}], "]"}], "&"}], ",", "\[IndentingNewLine]", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+              "sub", ",", "\"\</surf/\>\"", ",", "hemstr", ",", 
+               "\"\<.pol.avg.mgh\>\""}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+              "sub", ",", "\"\</surf/\>\"", ",", "hemstr", ",", 
+               "\"\<.ecc.avg.mgh\>\""}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"{", 
+              RowBox[{
+              "sub", ",", "\"\</surf/\>\"", ",", "hemstr", ",", 
+               "\"\<.co.avg.mgh\>\""}], "}"}]}], "}"}]}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"SubNativeCurv", "[", 
+          RowBox[{"sub", ",", "hemi"}], "]"}]}], "]"}], "]"}]}], "]"}]}], 
+   ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.623264005487002*^9, 3.6232640268275433`*^9}, {
+   3.623264109422811*^9, 3.623264112423492*^9}, {3.623264142743829*^9, 
+   3.62326422015473*^9}, {3.623319130316842*^9, 3.623319134298304*^9}, {
+   3.627063589141955*^9, 3.6270637021227283`*^9}, {3.62706388329711*^9, 
+   3.627064031220909*^9}, 3.631646154213153*^9, {3.6316468897185183`*^9, 
+   3.631646914404558*^9}, {3.631882408828164*^9, 3.631882440142981*^9}, {
+   3.6320536752016706`*^9, 3.6320537030170383`*^9}, {3.6320539337554417`*^9, 
+   3.632053936921811*^9}, {3.632054060544845*^9, 3.632054075544141*^9}, {
+   3.6320542706791897`*^9, 3.6320542906821003`*^9}, 3.632054575935656*^9, {
+   3.632054617352607*^9, 3.632054626963583*^9}, {3.6320595387184362`*^9, 
+   3.632059541854472*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.606776280986784*^9, 3.6067762815739107`*^9}, {
+   3.606776312452888*^9, 3.6067764026939583`*^9}, {3.606776443883108*^9, 
+   3.606776484512631*^9}, {3.606776612750499*^9, 3.606776701819034*^9}, {
+   3.606776740938175*^9, 3.6067768231774483`*^9}, {3.606776861904059*^9, 
+   3.606776919143961*^9}, {3.606776960158136*^9, 3.606776988031438*^9}, {
+   3.6067770323184423`*^9, 3.606777042592476*^9}, {3.6224659682812977`*^9, 
+   3.622465974667821*^9}, {3.62662379668224*^9, 3.626623912405837*^9}, {
+   3.627063715716331*^9, 3.627063807340395*^9}, {3.6270640409244328`*^9, 
+   3.627064063164879*^9}, {3.630091492455556*^9, 3.63009152119881*^9}, {
+   3.630091552295601*^9, 3.630091559527368*^9}, {3.630092475393345*^9, 
+   3.630092490656542*^9}, {3.63009311442174*^9, 3.630093134583119*^9}, {
+   3.630158939865159*^9, 3.63015894748742*^9}, 3.630159491811461*^9, {
+   3.630168444360869*^9, 3.630168472288321*^9}, {3.630168646736228*^9, 
+   3.6301686595604553`*^9}, {3.630174380651449*^9, 3.630174413608715*^9}, {
+   3.630174683133932*^9, 3.630174712693371*^9}, {3.630177051811429*^9, 
+   3.630177052201763*^9}, {3.630272217596511*^9, 3.630272243054675*^9}, {
+   3.6302724276088457`*^9, 3.630272428287198*^9}, {3.630856820055073*^9, 
+   3.630856829991922*^9}, {3.6313899333687277`*^9, 3.631389939446602*^9}, {
+   3.631455261506919*^9, 3.6314552622815247`*^9}, {3.63164555519458*^9, 
+   3.631645564497003*^9}, 3.631646196120717*^9, {3.631882462238603*^9, 
+   3.6318824638212767`*^9}, {3.631976223820215*^9, 3.631976230298953*^9}, 
+   3.6320537150505447`*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ClearAll", "[", "SubSurf", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"SubSurf", "[", 
+     RowBox[{"sub_String", ",", "hemi_"}], "]"}], ":=", 
+    RowBox[{"With", "[", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"res", "=", 
+        RowBox[{"Check", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"SurfaceResample", "[", "\[IndentingNewLine]", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"SubField", "[", 
+              RowBox[{"sub", ",", "hemi"}], "]"}], "\[Rule]", 
+             RowBox[{"SubjectSphereSurface", "[", 
+              RowBox[{"sub", ",", "hemi"}], "]"}]}], ",", 
+            "\[IndentingNewLine]", "FSAverageSymSphereSurface"}], "]"}], ",", 
+          "\[IndentingNewLine]", "$Failed"}], "]"}]}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{"res", "===", "$Failed"}], ",", "res", ",", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"SubSurf", "[", 
+           RowBox[{"sub", ",", "hemi"}], "]"}], "=", "res"}], ")"}]}], 
+       "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"SubMap", "[", 
+    RowBox[{"sub_String", ",", 
+     RowBox[{"hemi", ":", 
+      RowBox[{"(", 
+       RowBox[{"LH", "|", "RH"}], ")"}]}]}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"res", "=", 
+       RowBox[{"Check", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"SurfaceProjection", "[", "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{"SubSurf", "[", 
+            RowBox[{"sub", ",", "hemi"}], "]"}], ",", "\[IndentingNewLine]", 
+           RowBox[{"Center", "\[Rule]", " ", 
+            RowBox[{"SubjectSphereOP", "[", 
+             RowBox[{"sub", ",", "hemi"}], "]"}]}], ",", 
+           "\[IndentingNewLine]", 
+           RowBox[{"Radius", "\[Rule]", 
+            RowBox[{"Pi", "/", "3"}]}]}], "]"}], ",", "\[IndentingNewLine]", 
+         "$Failed"}], "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"res", "===", "$Failed"}], ",", "res", ",", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"SubMap", "[", 
+          RowBox[{"sub", ",", "hemi"}], "]"}], "=", "res"}], ")"}]}], "]"}]}],
+     "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.623263878567918*^9, 3.6232639534616547`*^9}, {
+   3.623264257176239*^9, 3.623264331314953*^9}, {3.623264392275383*^9, 
+   3.623264482064343*^9}, {3.62326458695724*^9, 3.623264589947564*^9}, {
+   3.623277919052217*^9, 3.6232779546249237`*^9}, {3.6266259316773043`*^9, 
+   3.62662600968996*^9}, {3.627064087637068*^9, 3.627064156596284*^9}, {
+   3.627064188104844*^9, 3.627064367492991*^9}, 3.6316462070389433`*^9, 
+   3.631646996407586*^9, {3.631882501856516*^9, 3.631882510400506*^9}, {
+   3.631882542258033*^9, 3.6318825443604393`*^9}, {3.6318825840771503`*^9, 
+   3.6318825858683567`*^9}, {3.632053727064967*^9, 3.632053735799108*^9}, 
+   3.632053784192398*^9, 3.632054354752474*^9, 3.632054484063089*^9, {
+   3.6320546506328793`*^9, 3.632054677001562*^9}, {3.632404695502556*^9, 
+   3.632404741482986*^9}, 3.632405431201346*^9, 3.632405668740836*^9, {
+   3.63240621409833*^9, 3.6324062747984467`*^9}, 3.632406586770829*^9, {
+   3.632406836625615*^9, 3.6324068797720823`*^9}, {3.63243489849209*^9, 
+   3.632434918739007*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.612697593822801*^9, 3.612697593917108*^9}, {
+   3.612697625188862*^9, 3.612697630346765*^9}, {3.612697666717827*^9, 
+   3.6126977710522823`*^9}, {3.6126993910864162`*^9, 3.612699396848441*^9}, {
+   3.612699636923656*^9, 3.612699669251031*^9}, {3.622465980565887*^9, 
+   3.6224659862054873`*^9}, 3.63009162292408*^9, 3.630093164959979*^9, 
+   3.630093202287652*^9, {3.630093232451889*^9, 3.630093243625387*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.623264494943758*^9, 3.6232645097509604`*^9}, {
+   3.623264596971364*^9, 3.623264626477219*^9}, {3.6266295432527323`*^9, 
+   3.626629570405299*^9}, 3.630091628525042*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Cutoffs and Individual Data", "Subsubsection",
+ CellChangeTimes->{{3.6266244278846703`*^9, 3.626624432843884*^9}}],
+
+Cell["\<\
+Here we find a cutoff for the data for each subject. We use a quantile cutoff \
+for this...\
+\>", "Text",
+ CellChangeTimes->{{3.626624434957018*^9, 3.626624444747266*^9}, {
+  3.626624600600268*^9, 3.626624604991344*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ClearAll", "[", "SubCutoff", "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"SubCutoff", "[", 
+    RowBox[{"sub_String", ",", 
+     RowBox[{"hemi", ":", 
+      RowBox[{"(", 
+       RowBox[{"LH", "|", "RH"}], ")"}]}]}], "]"}], ":=", 
+   RowBox[{"CarefulSet", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"SubCutoff", "[", 
+      RowBox[{"sub", ",", "hemi"}], "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Quantile", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"Select", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"Field", "[", 
+           RowBox[{"SubMap", "[", 
+            RowBox[{"sub", ",", "hemi"}], "]"}], "]"}], "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", "3"}], "]"}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"NumberQ", "[", "#", "]"}], "&&", 
+           RowBox[{"#", ">", "0"}]}], "&"}]}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"If", "[", 
+        RowBox[{
+         RowBox[{"All", "=!=", "All"}], ",", "0.8", ",", "0.25"}], "]"}]}], 
+      "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.626624609630266*^9, 3.626624639950528*^9}, {
+   3.626624739641799*^9, 3.6266247421939173`*^9}, {3.626624800294116*^9, 
+   3.626624800965613*^9}, {3.626625102445005*^9, 3.6266251668694963`*^9}, {
+   3.62662657800071*^9, 3.6266265829678497`*^9}, {3.626626616304043*^9, 
+   3.626626616942981*^9}, {3.626629317310967*^9, 3.626629378416767*^9}, {
+   3.626629615871868*^9, 3.6266296764837646`*^9}, {3.626724404688451*^9, 
+   3.626724427046256*^9}, {3.627064419332946*^9, 3.627064530014789*^9}, 
+   3.630091689545887*^9, {3.630167438980137*^9, 3.630167439058423*^9}, {
+   3.630174906254325*^9, 3.630174928294723*^9}, {3.630177325775926*^9, 
+   3.63017732588575*^9}, {3.630240305933133*^9, 3.630240306038003*^9}, {
+   3.630242243020022*^9, 3.630242243075848*^9}, {3.630255069719082*^9, 
+   3.6302550698054132`*^9}, {3.630272299456575*^9, 3.630272300048596*^9}, {
+   3.6304237951657753`*^9, 3.630423798276547*^9}, {3.630423994776514*^9, 
+   3.630424000980714*^9}, {3.630424081745122*^9, 3.63042408246453*^9}, {
+   3.630430515257653*^9, 3.630430517416308*^9}, {3.63085781024188*^9, 
+   3.630857810335835*^9}, {3.630858008354596*^9, 3.6308580088331203`*^9}, 
+   3.630858099917541*^9, 3.630958969450934*^9, {3.632054685101099*^9, 
+   3.6320547538150473`*^9}, {3.632055219689698*^9, 3.632055238828277*^9}, {
+   3.6320554301268587`*^9, 3.632055430437973*^9}, 3.632055980359399*^9, 
+   3.632059875470907*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ClearAll", "[", "SubClippedMap", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"SubClippedMap", "::", "usage"}], "=", 
+   "\"\<SubClippedMap[sub,hemi,half] yields a map that is identical to \
+SubMap[sub,hemi,half] with the exception that the field values ({angle, \
+eccen, fstat, curv}) of all vertices with an fstat value below the \
+SubCutoff[sub,hemi,half] have been replaced with {None, None, None, \
+curv}.\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"SubClippedMap", "[", 
+    RowBox[{"sub_String", ",", 
+     RowBox[{"hemi", ":", 
+      RowBox[{"(", 
+       RowBox[{"LH", "|", "RH"}], ")"}]}]}], "]"}], ":=", 
+   RowBox[{"CarefulSet", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"SubClippedMap", "[", 
+      RowBox[{"sub", ",", "hemi"}], "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Rule", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"Map", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"Function", "[", "\[IndentingNewLine]", 
+          RowBox[{"If", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"NumberQ", "[", 
+              RowBox[{"#", "[", 
+               RowBox[{"[", "3", "]"}], "]"}], "]"}], "&&", 
+             RowBox[{
+              RowBox[{"#", "[", 
+               RowBox[{"[", "3", "]"}], "]"}], ">", 
+              RowBox[{"SubCutoff", "[", 
+               RowBox[{"sub", ",", "hemi"}], "]"}]}], "&&", 
+             RowBox[{
+              RowBox[{"#", "[", 
+               RowBox[{"[", "1", "]"}], "]"}], "\[NotEqual]", "0"}]}], ",", 
+            "\[IndentingNewLine]", 
+            RowBox[{"If", "[", 
+             RowBox[{
+              RowBox[{"hemi", "===", "RH"}], ",", 
+              RowBox[{"Prepend", "[", 
+               RowBox[{
+                RowBox[{"Rest", "[", "#", "]"}], ",", 
+                RowBox[{"Abs", "[", 
+                 RowBox[{"#", "[", 
+                  RowBox[{"[", "1", "]"}], "]"}], "]"}]}], "]"}], ",", "#"}], 
+             "]"}], ",", "\[IndentingNewLine]", 
+            RowBox[{"{", 
+             RowBox[{"None", ",", "None", ",", "None", ",", 
+              RowBox[{"#", "[", 
+               RowBox[{"[", "4", "]"}], "]"}]}], "}"}]}], "]"}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Field", "[", 
+          RowBox[{"SubMap", "[", 
+           RowBox[{"sub", ",", "hemi"}], "]"}], "]"}]}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"MapName", "[", 
+        RowBox[{"SubMap", "[", 
+         RowBox[{"sub", ",", "hemi"}], "]"}], "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.626629132944059*^9, 3.626629172311105*^9}, {
+   3.626629228420665*^9, 3.6266293091906233`*^9}, {3.626629698054878*^9, 
+   3.62662979123357*^9}, {3.62671729246332*^9, 3.6267173154597597`*^9}, {
+   3.626724706254155*^9, 3.626724708486421*^9}, {3.627064541620428*^9, 
+   3.62706464633225*^9}, 3.6300917763005743`*^9, {3.6320548459727993`*^9, 
+   3.632054847491198*^9}, {3.632055448327971*^9, 3.632055455750576*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ StyleBox["Registration", "Subsection"]], "Input",
+ CellChangeTimes->{{3.630423408060659*^9, 3.6304234080632877`*^9}}],
+
+Cell[BoxData["Registration"], "Output",
+ CellChangeTimes->{
+  3.631646896889908*^9, 3.631646957243981*^9, 3.6316470053779707`*^9, 
+   3.6316472251967*^9, {3.631883232169716*^9, 3.6318832550089207`*^9}, 
+   3.631884090807275*^9, 3.63188465806959*^9, 3.6318853450852213`*^9, 
+   3.631885602904701*^9, 3.631886003858704*^9, 3.631886056700979*^9, 
+   3.6318886088824*^9, 3.631889126194137*^9, 3.631890166516996*^9, 
+   3.631976588888629*^9, 3.631977501193549*^9, 3.6319830458877287`*^9, 
+   3.63198490205693*^9, 3.6319898178947*^9, 3.63198988769703*^9, 
+   3.632053806891995*^9, 3.632053918140872*^9, 3.632053983089625*^9, 
+   3.632054081506242*^9, 3.632054387145954*^9, 3.63205451632166*^9, 
+   3.6320548708882837`*^9, 3.6320555057425833`*^9, 3.632055621750018*^9, 
+   3.6320556531036367`*^9, 3.632059626515791*^9, 3.632060891497602*^9, 
+   3.632061032498754*^9, 3.632077552894019*^9, 3.632140915966742*^9, 
+   3.632141308605624*^9, 3.632153462987569*^9, 3.632153757199584*^9, 
+   3.632224374324573*^9, 3.6322258016073*^9, 3.632404784140747*^9, 
+   3.632405439453771*^9, 3.632405684017712*^9, 3.632405864505775*^9, 
+   3.632406282985196*^9, 3.632406507441491*^9, 3.632406598679879*^9, 
+   3.632406918421391*^9, 3.632434950477127*^9, 3.632586709966017*^9, 
+   3.632682263293486*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Choosing a Schira Model for Registration", "Subsubsection",
+ CellChangeTimes->{{3.618348054062316*^9, 3.61834805924399*^9}, {
+  3.618435724831626*^9, 3.618435725231427*^9}, {3.6224683547592993`*^9, 
+  3.622468355975091*^9}}],
+
+Cell["\<\
+In this section, we choose a Schira model for registration. I have entered \
+here the default Schira model, which is the version I used. If you call the \
+function ManipulateSchiraModel, as in the unevaluabe cell below, it will \
+construct a manipulatable instance of the Schira model on top of the polar \
+angle and eccentricity map of the given subject and hemisphere.
+
+theSchiraModel=SchiraModel[
+A\[Rule]1.5,
+B\[Rule]45.0,
+\[CapitalLambda]\[Rule]3.0,
+\[CapitalPsi]\[Rule]0.7,
+V1Size\[Rule]1.1,
+V2Size\[Rule]0.45,
+V3Size\[Rule]0.35,
+HV4Size\[Rule]0.4,
+V3ASize\[Rule]0.4,
+Scale\[Rule]40.0,
+Shear\[Rule]{{1,0},{-0.2,1}},
+\[CapitalRho]90\[Rule]90.0,
+FC\[Rule]{-0.15,-0.4}];\
+\>", "Text",
+ CellChangeTimes->{{3.618348061315824*^9, 3.6183481668191013`*^9}, {
+   3.618348197876799*^9, 3.6183482086357107`*^9}, {3.6184355165288773`*^9, 
+   3.618435523943143*^9}, 3.6224643570976887`*^9, {3.630780033748548*^9, 
+   3.630780036516746*^9}, {3.632140380358602*^9, 3.632140380973261*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"theSchiraModel", "=", 
+   RowBox[{"SchiraModel", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"A", "\[Rule]", "1.5"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"B", "\[Rule]", "45.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalLambda]", "\[Rule]", "3.0"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Scale", "\[Rule]", "40.0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V1Size", "\[Rule]", "1.1"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V2Size", "\[Rule]", "0.45"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V3Size", "\[Rule]", "0.25"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"HV4Size", "\[Rule]", "0.4"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"V3ASize", "\[Rule]", "0.4"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalPsi]", "\[Rule]", "0.2"}], ",", "\[IndentingNewLine]", 
+     
+     RowBox[{"Shear", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"1", ",", "0"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "0.1"}], ",", "1"}], "}"}]}], "}"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalRho]90", "\[Rule]", "90.0"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"FC", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", 
+        RowBox[{"-", "0.2"}]}], "}"}]}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6302731537587643`*^9, 3.630273154017006*^9}, {
+   3.630423213650827*^9, 3.630423213858493*^9}, {3.630423435117868*^9, 
+   3.630423463999064*^9}, {3.630423807164556*^9, 3.630423807300357*^9}, {
+   3.630429870093655*^9, 3.630429870211659*^9}, {3.630780017757607*^9, 
+   3.6307800424064074`*^9}, {3.630783529366942*^9, 3.630783584377102*^9}, {
+   3.630783626256193*^9, 3.63078364782959*^9}, {3.630783685990839*^9, 
+   3.630783691341468*^9}, {3.630786470170212*^9, 3.630786515243956*^9}, {
+   3.6308566223274*^9, 3.6308566641973753`*^9}, {3.630858819589283*^9, 
+   3.630858828404215*^9}, {3.630858885288885*^9, 3.630858910423655*^9}, {
+   3.630859143122233*^9, 3.630859145401813*^9}, {3.630865286242126*^9, 
+   3.630865291802142*^9}, {3.630865447387093*^9, 3.6308654546496*^9}, {
+   3.630876612040949*^9, 3.630876612384264*^9}, {3.630879330784058*^9, 
+   3.630879331605467*^9}, {3.630955829076137*^9, 3.6309558291996927`*^9}, 
+   3.630956540683751*^9, {3.630957206750205*^9, 3.630957220766213*^9}, {
+   3.630957299259431*^9, 3.630957299393717*^9}, {3.630957704253043*^9, 
+   3.630957715803577*^9}, {3.6309578811796103`*^9, 3.6309579472861032`*^9}, 
+   3.63095815714883*^9, {3.630958269325573*^9, 3.630958272379962*^9}, {
+   3.630959072488245*^9, 3.6309590734945517`*^9}, {3.630959262911632*^9, 
+   3.630959264187931*^9}, {3.630959342475936*^9, 3.630959342554227*^9}, {
+   3.630959791999353*^9, 3.6309598239189663`*^9}, {3.630959925623349*^9, 
+   3.6309599256916323`*^9}, {3.630960002807488*^9, 3.630960002934743*^9}, {
+   3.6309603695056973`*^9, 3.6309603703427477`*^9}, {3.63096067188443*^9, 
+   3.630960719061901*^9}, {3.630960997156918*^9, 3.630961009546609*^9}, {
+   3.630961378923511*^9, 3.630961380282394*^9}, {3.6309615808452387`*^9, 
+   3.630961583691235*^9}, {3.630961681793441*^9, 3.63096168291938*^9}, {
+   3.630961808448345*^9, 3.630961820981658*^9}, {3.630961943580917*^9, 
+   3.630961943658893*^9}, {3.630962018560328*^9, 3.630962020142481*^9}, {
+   3.6309621956719103`*^9, 3.630962196326096*^9}, {3.630962254475274*^9, 
+   3.630962255056754*^9}, {3.630962382063673*^9, 3.6309623827259617`*^9}, {
+   3.630962528910638*^9, 3.630962530093051*^9}, {3.631038029324986*^9, 
+   3.631038050259099*^9}, {3.6310383295851717`*^9, 3.631038330103962*^9}, {
+   3.631280226259923*^9, 3.6312802682045183`*^9}, {3.631281318014029*^9, 
+   3.631281334630025*^9}, {3.631286430474722*^9, 3.631286430548895*^9}, {
+   3.63129337269764*^9, 3.631293376881509*^9}, {3.6314558171789837`*^9, 
+   3.63145583693891*^9}, {3.63146349480357*^9, 3.631463495593874*^9}, {
+   3.631463571229549*^9, 3.63146360078266*^9}, {3.631464746818915*^9, 
+   3.631464761379425*^9}, {3.63154976420499*^9, 3.631549825742257*^9}, {
+   3.631551846903277*^9, 3.631551876089526*^9}, {3.6315575428425283`*^9, 
+   3.631557552777252*^9}, {3.631565195218377*^9, 3.631565234737615*^9}, {
+   3.6315683532108793`*^9, 3.631568398282648*^9}, {3.6315721909885817`*^9, 
+   3.6315722325162287`*^9}, {3.631626531299425*^9, 3.631626583755047*^9}, {
+   3.631631258969261*^9, 3.631631290933587*^9}, {3.631888534827137*^9, 
+   3.631888578762097*^9}, {3.631890069342277*^9, 3.631890138544888*^9}, {
+   3.63198300812751*^9, 3.63198304185378*^9}, {3.631984886945669*^9, 
+   3.631984896862632*^9}, {3.63198701446063*^9, 3.631987053644113*^9}, {
+   3.631987145600174*^9, 3.63198714972825*^9}, {3.632077482118867*^9, 
+   3.632077485194635*^9}, {3.632141267119281*^9, 3.632141303777418*^9}, {
+   3.632153447138961*^9, 3.632153459681676*^9}, {3.632153752152532*^9, 
+   3.6321537537909107`*^9}, {3.632225773172014*^9, 3.6322257876939507`*^9}, {
+   3.6325866458084*^9, 3.632586645943465*^9}}],
+
+Cell[TextData[{
+ StyleBox["Show subject retinotopy", "Subsubsection"],
+ "\nHere we just show a subject\[CloseCurlyQuote]s retinotopy (for \
+demonstration of the MmaSurfer library mostly):"
+}], "Text",
+ CellChangeTimes->{{3.6270691702049*^9, 3.6270691826531687`*^9}, {
+  3.630423454296897*^9, 3.630423455629428*^9}}],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"sub", "=", 
+        RowBox[{"aggSubjects", "[", 
+         RowBox[{"[", "1", "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"hemi", "=", "LH"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Show", "[", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"MapPlot", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"SubClippedMap", "[", 
+           RowBox[{"sub", ",", "hemi"}], "]"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"ColorFunction", "\[Rule]", 
+           RowBox[{"ColorCortex", "[", 
+            RowBox[{"2", "\[Rule]", 
+             RowBox[{"{", 
+              RowBox[{"\"\<MyEccentricity\>\"", ",", 
+               RowBox[{"Opacity", "\[Rule]", "0.75"}]}], "}"}]}], "]"}]}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"Curvature", "\[Rule]", 
+           RowBox[{
+            RowBox[{"Field", "[", 
+             RowBox[{"SubClippedMap", "[", 
+              RowBox[{"sub", ",", "hemi"}], "]"}], "]"}], "[", 
+            RowBox[{"[", 
+             RowBox[{"All", ",", "4"}], "]"}], "]"}]}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ImageSize", "\[Rule]", 
+           RowBox[{"7", "*", "72"}]}]}], "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"SchiraLinePlot", "[", 
+         RowBox[{"theSchiraModel", ",", 
+          RowBox[{"EccentricityStyleFunction", "\[Rule]", 
+           RowBox[{"ColorCortex", "[", 
+            RowBox[{"{", 
+             RowBox[{"\"\<MyEccentricity\>\"", ",", 
+              RowBox[{"Opacity", "\[Rule]", "1"}]}], "}"}], "]"}]}]}], 
+         "]"}]}], "}"}], "]"}]}], "]"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"sub", "=", 
+        RowBox[{"aggSubjects", "[", 
+         RowBox[{"[", "1", "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"hemi", "=", "LH"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Show", "[", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"MapPlot", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"SubClippedMap", "[", 
+           RowBox[{"sub", ",", "hemi"}], "]"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"ColorFunction", "\[Rule]", 
+           RowBox[{"ColorCortex", "[", 
+            RowBox[{"1", "\[Rule]", 
+             RowBox[{"{", 
+              RowBox[{"PolarAngle", ",", 
+               RowBox[{"Opacity", "\[Rule]", "0.75"}]}], "}"}]}], "]"}]}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"Curvature", "\[Rule]", 
+           RowBox[{
+            RowBox[{"Field", "[", 
+             RowBox[{"SubClippedMap", "[", 
+              RowBox[{"sub", ",", "hemi"}], "]"}], "]"}], "[", 
+            RowBox[{"[", 
+             RowBox[{"All", ",", "4"}], "]"}], "]"}]}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ImageSize", "\[Rule]", 
+           RowBox[{"7", "*", "72"}]}]}], "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"SchiraLinePlot", "[", 
+         RowBox[{"theSchiraModel", ",", 
+          RowBox[{"EccentricityStyleFunction", "\[Rule]", 
+           RowBox[{"ColorCortex", "[", 
+            RowBox[{"{", 
+             RowBox[{"\"\<MyEccentricity\>\"", ",", 
+              RowBox[{"Opacity", "\[Rule]", "1"}]}], "}"}], "]"}]}]}], 
+         "]"}]}], "}"}], "]"}]}], "]"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.627069184442943*^9, 3.627069252335791*^9}, {
+   3.628006426565069*^9, 3.6280064287637*^9}, {3.628009443416938*^9, 
+   3.6280094564184923`*^9}, {3.630085867092012*^9, 3.63008586722676*^9}, {
+   3.630157470494768*^9, 3.630157470606558*^9}, {3.63015882660364*^9, 
+   3.630158826883759*^9}, {3.6301776372177963`*^9, 3.630177638584391*^9}, {
+   3.6301778006848917`*^9, 3.630177800900382*^9}, {3.630177895336379*^9, 
+   3.630177897292513*^9}, {3.630178003991405*^9, 3.630178006146679*^9}, {
+   3.630257421446527*^9, 3.63025744203113*^9}, {3.63025753813941*^9, 
+   3.630257538349848*^9}, {3.630257591958048*^9, 3.630257594197369*^9}, {
+   3.63026082612328*^9, 3.630260828015815*^9}, {3.6304238217004538`*^9, 
+   3.63042382673658*^9}, 3.6309448885317583`*^9, 3.6309459377748632`*^9, 
+   3.630947039336817*^9, {3.630947113702073*^9, 3.6309471255706863`*^9}, {
+   3.630947171703253*^9, 3.6309471944579353`*^9}, {3.630947236539464*^9, 
+   3.63094726571315*^9}, 3.630947315735314*^9, {3.630947399732973*^9, 
+   3.630947422337535*^9}, 3.630947599940693*^9, {3.630948675754315*^9, 
+   3.630948727338719*^9}, {3.630948773520534*^9, 3.630948775175661*^9}, {
+   3.630949185144863*^9, 3.6309491914478693`*^9}, 3.6309492402378187`*^9, {
+   3.630949337255056*^9, 3.630949338942954*^9}, {3.630949381011115*^9, 
+   3.630949384720995*^9}, {3.630949520384843*^9, 3.630949524919196*^9}, {
+   3.6309495677068787`*^9, 3.630949617216707*^9}, {3.630949658205126*^9, 
+   3.6309496625162888`*^9}, {3.6309498108612137`*^9, 3.630949815891139*^9}, {
+   3.630949934737959*^9, 3.63094994517782*^9}, {3.630949981978483*^9, 
+   3.630949985658024*^9}, {3.630950271911285*^9, 3.6309502721685553`*^9}, {
+   3.630950311074573*^9, 3.630950312816221*^9}, 3.6309505721051064`*^9, {
+   3.6309507920828238`*^9, 3.630950795541436*^9}, {3.630950942758142*^9, 
+   3.630950944277125*^9}, {3.630950988504199*^9, 3.6309509886372757`*^9}, {
+   3.630951032354269*^9, 3.630951032484172*^9}, {3.6309510881657763`*^9, 
+   3.630951142528517*^9}, {3.630951274035865*^9, 3.6309512820541143`*^9}, {
+   3.630951398899596*^9, 3.6309513991772127`*^9}, {3.630951784267606*^9, 
+   3.630951873651609*^9}, 3.630951910689892*^9, {3.630951972580483*^9, 
+   3.630951980418826*^9}, {3.630952052816525*^9, 3.63095205716744*^9}, {
+   3.630952153615552*^9, 3.630952179220316*^9}, {3.630955043082513*^9, 
+   3.630955175719252*^9}, {3.630955209153441*^9, 3.6309552112637053`*^9}, {
+   3.6309552694699583`*^9, 3.630955279570092*^9}, {3.630955397666003*^9, 
+   3.6309554248351927`*^9}, {3.630955746089477*^9, 3.630955753151202*^9}, 
+   3.630955927325479*^9, {3.630958842544631*^9, 3.630958875887355*^9}, {
+   3.6309590771052732`*^9, 3.630959079368001*^9}, {3.630959110955596*^9, 
+   3.630959113667465*^9}, {3.630959196837412*^9, 3.630959202232288*^9}, {
+   3.630960444956551*^9, 3.630960446994573*^9}, {3.6309605034551287`*^9, 
+   3.630960503566675*^9}, {3.630960534512498*^9, 3.630960534614284*^9}, 
+   3.631017578017837*^9, {3.631565288381798*^9, 3.6315652921340647`*^9}, {
+   3.631646284872319*^9, 3.631646305511701*^9}, {3.631646372676464*^9, 
+   3.631646377219754*^9}, {3.631646425221793*^9, 3.63164642773344*^9}, 
+   3.631646563111112*^9, {3.6316467512041883`*^9, 3.6316468256495132`*^9}, {
+   3.632055462976674*^9, 3.6320554880890102`*^9}, {3.632055618168962*^9, 
+   3.6320556469037733`*^9}, {3.632060919335514*^9, 3.632060922897582*^9}}],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.630946134168796*^9, 3.630946147693948*^9}, {
+   3.6309461855860167`*^9, 3.6309461928446074`*^9}, {3.630946770667693*^9, 
+   3.6309467785746517`*^9}, {3.630947055671474*^9, 3.6309470729328127`*^9}, {
+   3.630949427834044*^9, 3.630949437224143*^9}, {3.630949755871376*^9, 
+   3.630949759308975*^9}, {3.630949886694141*^9, 3.6309498901704082`*^9}, {
+   3.630951207620337*^9, 3.630951207834545*^9}, 3.630952094179028*^9, {
+   3.63164631625145*^9, 3.631646343890985*^9}, {3.631646395320689*^9, 
+   3.631646407059999*^9}, {3.6316464577535467`*^9, 3.631646526588935*^9}, 
+   3.631646806576807*^9, 3.631647121960294*^9, 3.631884123330872*^9, {
+   3.631884568358527*^9, 3.63188458528286*^9}, 3.631884706133609*^9, 
+   3.631888852859085*^9, {3.6318890413547697`*^9, 3.631889066640967*^9}, {
+   3.631889239795664*^9, 3.631889254596106*^9}, {3.631889453013467*^9, 
+   3.631889465185343*^9}, {3.631890195733057*^9, 3.631890200450562*^9}, {
+   3.631890253061763*^9, 3.631890281277071*^9}}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Minimization and Simulation", "Section",
+ CellChangeTimes->{{3.61006240156866*^9, 3.6100624037412653`*^9}, {
+  3.61027448767699*^9, 3.610274490554246*^9}, {3.6107933273732643`*^9, 
+  3.6107933276740303`*^9}, {3.612619184240097*^9, 3.612619188205401*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Registration", "Subsection",
+ CellChangeTimes->{{3.612605630617496*^9, 3.61260563146309*^9}, {
+  3.612608870273786*^9, 3.612608872652001*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.6183482258140917`*^9, 3.618348232277999*^9}, {
+   3.6184048614635353`*^9, 3.61840486258006*^9}, {3.618406195934888*^9, 
+   3.618406196262198*^9}, {3.618435236652515*^9, 3.6184352420044613`*^9}, {
+   3.618435362563579*^9, 3.61843541434429*^9}, {3.621423092575165*^9, 
+   3.621423111102964*^9}, {3.621426121607386*^9, 3.621426125348621*^9}, {
+   3.621435232053437*^9, 3.621435234447694*^9}, {3.621460820364335*^9, 
+   3.621460831148571*^9}, {3.621700831711265*^9, 3.6217008352491693`*^9}, {
+   3.621813780718014*^9, 3.621813811923828*^9}, {3.621817561515517*^9, 
+   3.6218176219916353`*^9}, {3.6218465604829884`*^9, 3.621846589683319*^9}, {
+   3.621847595415885*^9, 3.6218475963094893`*^9}, {3.6235273758385983`*^9, 
+   3.623527435810849*^9}, 3.623531410173946*^9, 3.623534162690858*^9, {
+   3.630423170839967*^9, 3.630423180912833*^9}, 3.6304232963045187`*^9}],
+
+Cell["\<\
+This cell does not evaluate by default, but if you set it\[CloseCurlyQuote]s \
+properties to be evaluable (highlight the cell marker to the right then in \
+the menu: Cell > Cell Properties > Evaluable), you can play around with the \
+Schira parameters using sliders.\
+\>", "Text",
+ CellChangeTimes->{{3.618435427730315*^9, 3.618435443648636*^9}, 
+   3.621435246580299*^9, {3.627064716051255*^9, 3.627064765935714*^9}}],
+
+Cell[BoxData[
+ RowBox[{"ManipulateSchiraModel", "[", "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"SubClippedMap", "[", 
+    RowBox[{
+     RowBox[{"aggSubjects", "[", 
+      RowBox[{"[", "1", "]"}], "]"}], ",", "LH"}], "]"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"InitialModel", "\[Rule]", "theSchiraModel"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"VisualAreas", "\[Rule]", "Automatic"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"Curvature", "\[Rule]", 
+    RowBox[{
+     RowBox[{"Field", "[", 
+      RowBox[{"SubClippedMap", "[", 
+       RowBox[{
+        RowBox[{"aggSubjects", "[", 
+         RowBox[{"[", "1", "]"}], "]"}], ",", "LH"}], "]"}], "]"}], "[", 
+     RowBox[{"[", 
+      RowBox[{"All", ",", "4"}], "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+   RowBox[{"FStatMin", "\[Rule]", "0.3"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.618366551288292*^9, 3.618366566607512*^9}, {
+   3.618405759334711*^9, 3.618405772789154*^9}, 3.6184060347983093`*^9, {
+   3.618406166191448*^9, 3.6184061821977043`*^9}, {3.618406243869707*^9, 
+   3.618406245220724*^9}, {3.618408245780285*^9, 3.618408310598938*^9}, {
+   3.618416882898951*^9, 3.61841690412535*^9}, {3.6184169479772053`*^9, 
+   3.618416953391448*^9}, {3.6184308434519167`*^9, 3.618430852067873*^9}, {
+   3.621423124441181*^9, 3.621423127189705*^9}, {3.621425109183525*^9, 
+   3.621425113357485*^9}, {3.621426259129346*^9, 3.621426271739408*^9}, {
+   3.621460957708414*^9, 3.621460961401319*^9}, {3.621686611496128*^9, 
+   3.621686612518858*^9}, {3.621815814357193*^9, 3.621815838401883*^9}, {
+   3.621816282776925*^9, 3.621816302926458*^9}, {3.622464375501564*^9, 
+   3.6224643869476833`*^9}, {3.622464722526537*^9, 3.6224647233504133`*^9}, {
+   3.6235167355931063`*^9, 3.623516736007473*^9}, {3.6235251579947433`*^9, 
+   3.623525158770493*^9}, {3.6235251933328257`*^9, 3.623525194734631*^9}, {
+   3.623533550747538*^9, 3.623533581437586*^9}, {3.62706477787499*^9, 
+   3.627064840618265*^9}, {3.6302425400989*^9, 3.630242540198954*^9}, {
+   3.630256396024541*^9, 3.630256414848678*^9}, {3.6304308511918297`*^9, 
+   3.6304308512938557`*^9}, {3.630433418645837*^9, 3.630433418763855*^9}, {
+   3.63078263240477*^9, 3.630782632502615*^9}, {3.630951562010775*^9, 
+   3.630951597367079*^9}, {3.630955377041848*^9, 3.6309553779899073`*^9}, {
+   3.6310215593738194`*^9, 3.631021560774495*^9}, {3.63102194058851*^9, 
+   3.63102194306538*^9}, {3.6310228891051617`*^9, 3.6310228900973043`*^9}, {
+   3.631023335272772*^9, 3.631023336147656*^9}, {3.6310255314617367`*^9, 
+   3.63102553158811*^9}, {3.6310257477436743`*^9, 3.6310257481178713`*^9}, {
+   3.631025935871907*^9, 3.631025937126986*^9}, 3.6310261252083178`*^9, {
+   3.6313901833434467`*^9, 3.631390185583663*^9}, {3.6318832098575687`*^9, 
+   3.631883225297262*^9}, 3.631884074035344*^9, {3.631884635446617*^9, 
+   3.631884645197962*^9}, {3.631885237105015*^9, 3.6318852425043383`*^9}, {
+   3.631885742394557*^9, 3.631885745769504*^9}, {3.6318859531090307`*^9, 
+   3.631885986802127*^9}, {3.632061021312904*^9, 3.632061026591449*^9}, {
+   3.632061057975244*^9, 3.632061058527384*^9}, 3.6320611176325827`*^9, {
+   3.632062225041963*^9, 3.632062261556591*^9}, 3.6320630000485907`*^9}],
+
+Cell[CellGroupData[{
+
+Cell["Choosing a Potential Field", "Subsubsection",
+ CellChangeTimes->{{3.621701097530778*^9, 3.621701102405788*^9}, {
+  3.622468358167532*^9, 3.622468358655424*^9}}],
+
+Cell["\<\
+Here we define the potential field for the subjects to use during registration.
+
+There is a lot going on here. The potential field accepts a list of vertex \
+positions and yields a potential value based on their arrangement. It defines \
+how the registration occurs in that it is the function that we try to \
+minimize during registration. The potential field used during registration is \
+actually the sum of various individual potential fields, each of which \
+generally corresponds to one kind of topological feature of the map or \
+surface mesh that we want to prevent from changing too much. During \
+registration we deform the map or surface mesh (by moving the vertices \
+around) from its initial configuration in order to minimize the potential.
+
+When we define the potential field, we give the PotentialField function a \
+reference mesh, which is used to deduce how the mesh \[OpenCurlyQuote]ought\
+\[CloseCurlyQuote] to be arranged if there is no other force applied to it \
+(such as the force used to fit the retinotopy data to the model). These are \
+the forces that get defined automatically by the PotentialFunction function:
+  (1) The edge potential calculate how much the distances between neighboring \
+vertices has changed from the reference
+  (2) The angle potential calculates how much the angles of the mesh \
+triangles have changed from the reference
+  (3) The centroid potential calculates how far each vertex is from the \
+centroid of its neighbors
+  (4) The SchiraModel potential calculates a goodness-of-fit of the \
+retinotopy data to the Schira Model.
+ 
+The relative strengths of each of these forces can make a difference in what \
+kind of fit you get. I\[CloseCurlyQuote]ve calibrated these to a pretty good \
+place, but it can be useful to play around with them on occasion. Normally, \
+to get a potential field function, you would use expression:
+f = PotentialField[sub, hemi, half].
+You can add many options to the end of the PotentialField call to edit these \
+strengths, for example:
+f = PotentialField[sub, hemi, half, EdgesConstant -> (Automatic / 2), \
+CentroidConstant -> 0]
+will create a potential field with a stronger than usual edge force and no \
+centroid force. The (Automatic / 2) is an odd construct, but the Automatic \
+here gets replaced with 1/n where n is the number of vertices in the mesh \
+(all forces are usually normalized by the number of vertices over which they \
+act). Note that the Constant argument (as opposed to EdgesConstant or \
+CentroidConstant, etc) refers to the Schira model force\[CloseCurlyQuote]s \
+constant.
+
+Aside from the constant parameters, there are parameters that specify the \
+SchiraModel force details. First there is the SchiraModel parameter, which \
+can specify a SchiraModel object (see ?SchiraModel); by default, this uses \
+the global theSchiraModel object defined above in the previous section. The \
+StandardDeviation parameter specifies how the Schira model force dies off \
+with distance. The deadening with distance is necessary because of the many \
+noisy vertices that have assigned retinotopies but that should not inform the \
+model. Generally a value between 4 and 16 works well here, and the default is \
+8. Higher values indicate that the force should be weaker and spread over a \
+larger distance while small values indicate that the force should be stronger \
+and should concentrate over a small distance.
+
+See ?PotentialField for more options.\
+\>", "Text",
+ CellChangeTimes->{{3.6217011147506104`*^9, 3.621701182779702*^9}, {
+  3.62706509722078*^9, 3.6270657269200983`*^9}, {3.6270658479177628`*^9, 
+  3.62706585953514*^9}, {3.627065937880636*^9, 3.6270659913186007`*^9}, {
+  3.6270662705892973`*^9, 3.627066413030272*^9}, {3.6270664740204287`*^9, 
+  3.627066617991832*^9}, {3.627067430345457*^9, 3.627067509842978*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Unprotect", "[", 
+   RowBox[{"PotentialField", ",", "PotentialField20"}], "]"}], ";", 
+  RowBox[{"ClearAll", "[", 
+   RowBox[{"PotentialField", ",", "PotentialField20"}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"PotentialField", "::", "usage"}], "=", 
+   "\"\<PotentialField[sub,hemi,half] yields a potential field object for the \
+given subject/hemisphere. The following options are accepted:\n * FStatMin \
+(default: $DefaultAgg20FStatMin) specifies the minimum f-stat value to \
+include in the Schira model attractor force.\n * SchiraModel (default: \
+Automatic) specifies the Schira model instance to use for registration \
+(Automatic results in theSchiraModel being used).\n * StandardDeviation \
+(default: 8.0) specifies the standard deviation of the Gaussian potential \
+wells used in the Schira model attractor force.\n * Constant (default \
+0.25*Automatic) specifies the strength of the Schira model attractor force; \
+Automatic may be used as in the SchiraModel CorticalPotentialField \
+specification.\n * EdgesConstant (default: Automatic) specifies the edge \
+strength constant (as used with CorticalPotentialTerm).\n * AnglesConstant \
+(default: 0) specifies the angles strength constant (as used with \
+CorticalPotentialTerm).\n * CentroidConstant (default: Automatic/10.0) \
+specifies the strength of the centroid force (as used with \
+CorticalPotentialTerm).\n * Attractors (default: None) specifies additional \
+non-Schira-model attractors to use in the potential field. See ?Attractors \
+for more information.\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"PotentialField20", "::", "usage"}], "=", 
+    "\"\<PotentialField20 is identical to PotentialField except that it \
+accesses the 20\[Degree]\[NonBreakingSpace]dataset subjects.\>\""}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Begin", "[", "\"\<`Private`\>\"", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Options", "[", "PotentialField", "]"}], "=", 
+   RowBox[{"{", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"FStatMin", "\[Rule]", "Automatic"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"SchiraModel", "\[Rule]", "Automatic"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"EdgesConstant", "\[Rule]", 
+      RowBox[{"0.1", "*", "Automatic"}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{"AnglesConstant", "\[Rule]", "0"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CentroidConstant", "\[Rule]", "Automatic"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Attractors", "\[Rule]", "None"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Constant", "\[Rule]", 
+      RowBox[{"0.25", "*", "Automatic"}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{"StandardDeviation", "\[Rule]", "8.0"}]}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"PotentialField", "[", 
+    RowBox[{
+     RowBox[{"map_", "?", "MapQ"}], ",", 
+     RowBox[{"OptionsPattern", "[", "]"}]}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"mdl", "=", 
+        RowBox[{"Replace", "[", 
+         RowBox[{
+          RowBox[{"OptionValue", "[", "SchiraModel", "]"}], ",", 
+          RowBox[{"Automatic", "\[RuleDelayed]", "theSchiraModel"}]}], 
+         "]"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"ce", "=", 
+        RowBox[{"OptionValue", "[", "EdgesConstant", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ca", "=", 
+        RowBox[{"OptionValue", "[", "AnglesConstant", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"cc", "=", 
+        RowBox[{"OptionValue", "[", "CentroidConstant", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"cs", "=", 
+        RowBox[{"OptionValue", "[", "Constant", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"attrs", "=", 
+        RowBox[{"OptionValue", "[", "Attractors", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"\[Sigma]", "=", 
+        RowBox[{"OptionValue", "[", "StandardDeviation", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"fMin", "=", 
+        RowBox[{"OptionValue", "[", "FStatMin", "]"}]}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Apply", "[", "\[IndentingNewLine]", 
+      RowBox[{"CorticalPotentialField", ",", "\[IndentingNewLine]", 
+       RowBox[{"Flatten", "[", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"map", ",", "\[IndentingNewLine]", 
+          RowBox[{"EdgesConstant", "\[Rule]", "ce"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"AnglesConstant", "\[Rule]", "ca"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"CentroidConstant", "\[Rule]", "cc"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"If", "[", 
+           RowBox[{
+            RowBox[{"attrs", "===", "None"}], ",", 
+            RowBox[{"{", "}"}], ",", 
+            RowBox[{"Attractors", "\[Rule]", "attrs"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"SchiraModel", "\[Rule]", 
+           RowBox[{"{", "\[IndentingNewLine]", 
+            RowBox[{"mdl", ",", "\[IndentingNewLine]", 
+             RowBox[{"Constant", "\[Rule]", "cs"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"Select", "\[Rule]", 
+              RowBox[{"Function", "[", 
+               RowBox[{
+                RowBox[{"NumberQ", "[", 
+                 RowBox[{"#", "[", 
+                  RowBox[{"[", "3", "]"}], "]"}], "]"}], "&&", 
+                RowBox[{
+                 RowBox[{"#", "[", 
+                  RowBox[{"[", "3", "]"}], "]"}], ">", "fMin"}]}], "]"}]}], 
+             ",", "\[IndentingNewLine]", 
+             RowBox[{"PolarAngle", "\[Rule]", "First"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"Eccentricity", "\[Rule]", 
+              RowBox[{"Function", "[", 
+               RowBox[{"#", "[", 
+                RowBox[{"[", "2", "]"}], "]"}], "]"}]}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"StandardDeviation", "\[Rule]", "\[Sigma]"}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"Weights", "\[Rule]", 
+              RowBox[{"Function", "[", 
+               RowBox[{"Erf", "[", 
+                RowBox[{
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{"#", "[", 
+                    RowBox[{"[", 
+                    RowBox[{"2", ",", "3"}], "]"}], "]"}], "-", 
+                   RowBox[{"0.5", "*", "fMin"}]}], ")"}], "/", "fMin"}], 
+                "]"}], "]"}]}]}], "}"}]}]}], "}"}], "]"}]}], "]"}]}], "]"}]}],
+   ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"PotentialField", "[", 
+    RowBox[{"sub_String", ",", 
+     RowBox[{"hemi", ":", 
+      RowBox[{"(", 
+       RowBox[{"LH", "|", "RH"}], ")"}]}], ",", 
+     RowBox[{"opts", ":", 
+      RowBox[{"OptionsPattern", "[", "]"}]}]}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"map", "=", 
+        RowBox[{"SubClippedMap", "[", 
+         RowBox[{"sub", ",", "hemi"}], "]"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"fMin", "=", 
+        RowBox[{"Replace", "[", 
+         RowBox[{
+          RowBox[{"OptionValue", "[", "FStatMin", "]"}], ",", 
+          RowBox[{"Automatic", "\[RuleDelayed]", 
+           RowBox[{"SubCutoff", "[", 
+            RowBox[{"sub", ",", "hemi"}], "]"}]}]}], "]"}]}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"PotentialField", "[", 
+      RowBox[{"map", ",", "opts", ",", 
+       RowBox[{"FStatMin", "\[Rule]", "fMin"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"PotentialField", "[", 
+    RowBox[{"sub_String", ",", 
+     RowBox[{"hemi", ":", 
+      RowBox[{"(", 
+       RowBox[{"LH", "|", "RH"}], ")"}]}], ",", 
+     RowBox[{"opts", ":", 
+      RowBox[{"OptionsPattern", "[", "]"}]}]}], "]"}], ":=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"map", "=", 
+        RowBox[{"SubClippedMap", "[", 
+         RowBox[{"sub", ",", "hemi"}], "]"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"fMin", "=", 
+        RowBox[{"Replace", "[", 
+         RowBox[{
+          RowBox[{"OptionValue", "[", "FStatMin", "]"}], ",", 
+          RowBox[{"Automatic", "\[RuleDelayed]", 
+           RowBox[{"SubCutoff", "[", 
+            RowBox[{"sub", ",", "hemi"}], "]"}]}]}], "]"}]}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"PotentialField", "[", 
+      RowBox[{"map", ",", "opts", ",", 
+       RowBox[{"FStatMin", "\[Rule]", "fMin"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Protect", "[", "PotentialField", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"End", "[", "]"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.621701188202651*^9, 3.62170129478548*^9}, {
+   3.621701354495956*^9, 3.621701373706465*^9}, {3.6218481176285677`*^9, 
+   3.621848155124323*^9}, {3.621855505164565*^9, 3.621855542155306*^9}, {
+   3.6224650889739943`*^9, 3.622465094533173*^9}, {3.6224661053013153`*^9, 
+   3.622466106085084*^9}, {3.623239761961632*^9, 3.623239958623311*^9}, {
+   3.6232400904643803`*^9, 3.623240301344323*^9}, {3.6232403386005363`*^9, 
+   3.6232404216095543`*^9}, {3.623355022525675*^9, 3.623355059266765*^9}, {
+   3.623536258304686*^9, 3.623536262699182*^9}, {3.6266310159200373`*^9, 
+   3.6266310573630457`*^9}, {3.626631151678671*^9, 3.6266313783338747`*^9}, {
+   3.626631496418618*^9, 3.626631514220771*^9}, {3.626646379724353*^9, 
+   3.6266464049749727`*^9}, {3.626646494882765*^9, 3.626646513354638*^9}, {
+   3.626717823211265*^9, 3.6267178674981194`*^9}, {3.626718312100245*^9, 
+   3.6267183353143*^9}, {3.626718453461306*^9, 3.626718454364771*^9}, {
+   3.6267185383796597`*^9, 3.626718538826295*^9}, {3.627065741945137*^9, 
+   3.627065742552547*^9}, 3.6270658302774277`*^9, {3.62706587307051*^9, 
+   3.62706590639872*^9}, {3.627066008285329*^9, 3.62706605300386*^9}, {
+   3.627066167731903*^9, 3.6270662577675467`*^9}, {3.627066422742907*^9, 
+   3.627066467502963*^9}, {3.627067075713697*^9, 3.627067123743593*^9}, {
+   3.6320615065659018`*^9, 3.6320615544953413`*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.632061546877022*^9, 3.632061546882927*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Register Individual Subjects", "Subsubsection",
+ CellChangeTimes->{{3.626646424114271*^9, 3.626646427577443*^9}}],
+
+Cell[TextData[{
+ "Here we want to actually register the individual subjects.  I have included \
+example code for registering one subject, aggSubject[[5]] (left hemisphere, \
+full scan).\n\nRegistration is performed by the MapRegister function, which \
+is part of the MmaSurfer library; see ?MapRegister. This function yeilds a \
+map whose field is identical to that of the map passed to it (SubClippedMap \
+in the code below) but whose vertices have been rearranged to accomodate the \
+potential function.\n\nKeep in mind that playing with the parameters of the \
+registration (mostly described in the section above) will result in slightly \
+different registrations (hopefully the amount of difference in the \
+registration is similar to the amount of difference in the parameters). \
+Additionally, the MapRegister function may take a Method argument, which \
+specifies how minimization should occur. This single option is a rabbit hole \
+that has been very well documented by ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " but which, in my experience, is pretty hard to use without a lot of \
+familiarity with modern nonlinear optimization algorithms. For the most part, \
+I would advise trusting MapRegister to choose a good method automatically. \
+That said, I\[CloseCurlyQuote]ve occasionally found a map or model that \
+benefits from using the following method option: \nMethod -> {Automatic, \
+\[OpenCurlyDoubleQuote]StepControl\[CloseCurlyDoubleQuote] -> {\
+\[OpenCurlyDoubleQuote]LineSearch\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]CurvatureFactor\[CloseCurlyDoubleQuote] -> 0.99, \
+\[OpenCurlyDoubleQuote]MaxStepSize\[CloseCurlyDoubleQuote] -> 1.0}}.\nSee \
+http://reference.wolfram.com/language/tutorial/\
+UnconstrainedOptimizationLineSearchMethods.html for details on this \
+particular setting."
+}], "Text",
+ CellChangeTimes->{{3.62706670953644*^9, 3.627066732768066*^9}, {
+  3.627067002011547*^9, 3.627067005131757*^9}, {3.627067228397847*^9, 
+  3.6270672323175287`*^9}, {3.627067279134501*^9, 3.6270673794533567`*^9}, {
+  3.627067575807928*^9, 3.627067749581389*^9}, {3.6270679030254383`*^9, 
+  3.627067938526256*^9}, {3.627068013979776*^9, 3.627068140298483*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"registeredMap", "=", 
+   RowBox[{"With", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"sub", "=", 
+        RowBox[{"aggSubjects", "[", 
+         RowBox[{"[", "1", "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"hemi", "=", "LH"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"potentialFieldOptions", "=", 
+        RowBox[{"{", 
+         RowBox[{"StandardDeviation", "\[Rule]", "2.0"}], "}"}]}]}], "}"}], 
+     ",", "\[IndentingNewLine]", 
+     RowBox[{"(*", " ", 
+      RowBox[{
+      "Declare", " ", "the", " ", "potential", " ", "field", " ", "and", " ", 
+       "get", " ", "the", " ", "map", " ", "we", " ", "register", " ", "to", 
+       " ", 
+       RowBox[{"it", ":"}]}], " ", "*)"}], "\[IndentingNewLine]", 
+     RowBox[{"With", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"mapToRegister", "=", 
+          RowBox[{"SubClippedMap", "[", 
+           RowBox[{"sub", ",", "hemi"}], "]"}]}], ",", "\[IndentingNewLine]", 
+         
+         RowBox[{"PF", "=", 
+          RowBox[{"PotentialField", "[", 
+           RowBox[{"sub", ",", "hemi", ",", 
+            RowBox[{"Sequence", "@@", "potentialFieldOptions"}]}], "]"}]}]}], 
+        "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"(*", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{
+         "Note", " ", "that", " ", "if", " ", "the", " ", "StepMonitor", " ", 
+          "option", " ", "is", " ", "None"}], ",", " ", 
+         RowBox[{
+          RowBox[{
+          "nothing", " ", "will", " ", "be", " ", "displayed", " ", "during", 
+           " ", "registration"}], ";", " ", 
+          RowBox[{"with", " ", "the", " ", "Print", " ", "option"}]}], ",", 
+         " ", 
+         RowBox[{
+         "an", " ", "updating", " ", "graphic", " ", "of", " ", "the", " ", 
+          "registration", " ", "progress", " ", "is", " ", "displayed"}]}], 
+        "\[IndentingNewLine]", "*)"}], "\[IndentingNewLine]", 
+       RowBox[{"MapRegister", "[", 
+        RowBox[{"mapToRegister", ",", "PF", ",", 
+         RowBox[{"StepMonitor", "\[Rule]", "Print"}], ",", 
+         RowBox[{"MaxIterations", "\[Rule]", "Infinity"}]}], "]"}]}], "]"}]}],
+     "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.627066742918729*^9, 3.627066985973686*^9}, {
+   3.627067039700429*^9, 3.6270670407895203`*^9}, {3.627067142006652*^9, 
+   3.627067227112273*^9}, {3.627067317142709*^9, 3.627067337423481*^9}, {
+   3.6280069468841343`*^9, 3.628006947626452*^9}, {3.630242521512528*^9, 
+   3.630242521622991*^9}, 3.630866806072814*^9, {3.6308729407698107`*^9, 
+   3.63087294087995*^9}, {3.631569724588678*^9, 3.631569728426659*^9}, {
+   3.631569946062859*^9, 3.631569946179861*^9}, {3.631570712374127*^9, 
+   3.63157071298044*^9}, {3.631573639083787*^9, 3.631573639446548*^9}, {
+   3.631891628706152*^9, 3.63189163188839*^9}, {3.631891742552339*^9, 
+   3.631891742621286*^9}, {3.6318922111158733`*^9, 3.631892212065936*^9}, 
+   3.6318937442939243`*^9, {3.631896867788951*^9, 3.6318968701153927`*^9}, 
+   3.631896902390006*^9, {3.6320614328918753`*^9, 3.632061447644127*^9}, {
+   3.63206432203197*^9, 3.632064322281456*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"FindArgMin", "::", "lstol"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"The line search decreased the step size to within the \
+tolerance specified by AccuracyGoal and PrecisionGoal but was unable to find \
+a sufficient decrease in the function. You may need more than \
+\[NoBreak]\\!\\(MachinePrecision\\)\[NoBreak] digits of working precision to \
+meet these tolerances. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/FindArgMin\\\", ButtonNote -> \
+\\\"FindArgMin::lstol\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632155325850935*^9, 3.632228631107787*^9, 
+  3.632436669995634*^9, 3.6325884210153418`*^9, 3.632683793132821*^9}]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.631897353633663*^9, 3.6318973738036413`*^9}, {
+   3.631897484631732*^9, 3.6318974864862747`*^9}, {3.631897987026224*^9, 
+   3.631898016598654*^9}, {3.6320620639618797`*^9, 3.632062069563987*^9}, 
+   3.632064305298604*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Show", "[", "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"MapMeshPlot", "[", "\[IndentingNewLine]", 
+      RowBox[{"registeredMap", ",", "\[IndentingNewLine]", 
+       RowBox[{"ColorFunction", "\[Rule]", 
+        RowBox[{"ColorCortex", "[", 
+         RowBox[{
+          RowBox[{"2", "\[Rule]", 
+           RowBox[{"{", 
+            RowBox[{"\"\<MyEccentricity\>\"", ",", 
+             RowBox[{"Opacity", "\[Rule]", "0.75"}]}], "}"}]}], ",", 
+          RowBox[{"4", "\[Rule]", "Curvature"}]}], "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ImageSize", "\[Rule]", 
+        RowBox[{"7", "*", "72"}]}]}], "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"SchiraLinePlot", "[", 
+      RowBox[{"theSchiraModel", ",", 
+       RowBox[{"EccentricityStyleFunction", "\[Rule]", 
+        RowBox[{"ColorCortex", "[", 
+         RowBox[{"{", 
+          RowBox[{"\"\<MyEccentricity\>\"", ",", 
+           RowBox[{"Opacity", "\[Rule]", "1"}]}], "}"}], "]"}]}], ",", 
+       RowBox[{"PolarAngleLines", "\[Rule]", "None"}]}], "]"}]}], "}"}], 
+   "]"}], "\[IndentingNewLine]", "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.6270681625612383`*^9, 3.6270682062908897`*^9}, {
+   3.627068278724679*^9, 3.627068298038803*^9}, {3.630255832793644*^9, 
+   3.630255833256888*^9}, {3.630872153481617*^9, 3.630872157727957*^9}, {
+   3.630955332790732*^9, 3.630955338233705*^9}, 3.6313690032337503`*^9, {
+   3.631369048516285*^9, 3.6313690505200787`*^9}, {3.631894894706478*^9, 
+   3.631894941152217*^9}, {3.6318949729227543`*^9, 3.6318949730913267`*^9}, {
+   3.631895044370161*^9, 3.631895065607638*^9}, {3.63189509908812*^9, 
+   3.631895117297289*^9}, {3.631895665108713*^9, 3.63189566785858*^9}, {
+   3.631896434626039*^9, 3.631896435770146*^9}, 3.6318964843899803`*^9, {
+   3.6318965983152246`*^9, 3.63189661815974*^9}, 3.631896666846225*^9}],
+
+Cell[BoxData[
+ RowBox[{"Show", "[", "\[IndentingNewLine]", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"MapMeshPlot", "[", "\[IndentingNewLine]", 
+     RowBox[{"registeredMap", ",", "\[IndentingNewLine]", 
+      RowBox[{"ColorFunction", "\[Rule]", 
+       RowBox[{"ColorCortex", "[", 
+        RowBox[{
+         RowBox[{"1", "\[Rule]", "PolarAngle"}], ",", 
+         RowBox[{"4", "\[Rule]", "Curvature"}]}], "]"}]}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"ImageSize", "\[Rule]", 
+       RowBox[{"7", "*", "72"}]}]}], "]"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"SchiraLinePlot", "[", 
+     RowBox[{"theSchiraModel", ",", 
+      RowBox[{"EccentricityLines", "\[Rule]", "None"}]}], "]"}]}], "}"}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{3.6318967377057734`*^9}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.6308721606868963`*^9, 3.6308721618168592`*^9}, {
+  3.631896770279701*^9, 3.6318967884304333`*^9}}],
+
+Cell[BoxData["\[IndentingNewLine]"], "Input",
+ CellChangeTimes->{{3.630255837974927*^9, 3.630255875837731*^9}, 
+   3.630256202321514*^9, 3.630872149619607*^9}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.630257276463382*^9, 3.630257277549597*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.630257280190538*^9, 3.630257281076421*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.630159008592311*^9, 3.630159009857471*^9}}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Construct Prediction from Registration", "Subsection",
+ CellChangeTimes->{{3.611562476391306*^9, 3.611562487981065*^9}, {
+  3.627066690812726*^9, 3.627066693721251*^9}}],
+
+Cell["\<\
+Given a registered map such as the one from the section above, we can assume \
+that the location of any vertex is now in agreement with the coordinate \
+system of the Schira model object that we used. To create a model prediction, \
+we basically just stamp the Schira model values onto the vertices under it. \
+The function RegistrationToPrediction, defined in this notebook\
+\[CloseCurlyQuote]s introduction, makes this easy:\
+\>", "Text",
+ CellChangeTimes->{{3.627067383861148*^9, 3.6270674128752213`*^9}, {
+  3.627067535022941*^9, 3.627067541262452*^9}, {3.6270683957269*^9, 
+  3.6270684441237707`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"predictedField", "=", 
+   RowBox[{"RegistrationToPrediction", "[", 
+    RowBox[{
+     RowBox[{"VertexList", "[", "registeredMap", "]"}], ",", " ", 
+     "theSchiraModel"}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.627068471435616*^9, 3.62706848589046*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", " ", 
+   RowBox[{
+   "Note", " ", "that", " ", "this", " ", "adds", " ", "the", " ", 
+    "curvature", " ", "back", " ", "into", " ", "the", " ", "field", " ", 
+    "of", " ", "the", " ", "predictedMap"}], " ", "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"predictedMap", "=", 
+    RowBox[{
+     RowBox[{"Transpose", "[", 
+      RowBox[{"Append", "[", 
+       RowBox[{
+        RowBox[{"Transpose", "[", "predictedField", "]"}], ",", 
+        RowBox[{
+         RowBox[{"Field", "[", "registeredMap", "]"}], "[", 
+         RowBox[{"[", 
+          RowBox[{"All", ",", "4"}], "]"}], "]"}]}], "]"}], "]"}], "\[Rule]", 
+     
+     RowBox[{"SubMap", "[", 
+      RowBox[{
+       RowBox[{"aggSubjects", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", "LH"}], "]"}]}]}], 
+   ";"}]}]], "Input",
+ CellChangeTimes->{{3.627068504223604*^9, 3.6270685124269047`*^9}, {
+  3.627068548675194*^9, 3.6270686450390053`*^9}, {3.631891349773366*^9, 
+  3.6318913898375263`*^9}, {3.632068222383563*^9, 3.6320682235183277`*^9}}],
+
+Cell["Here, we plot that prediction...", "Text",
+ CellChangeTimes->{{3.627068489767378*^9, 3.6270684962543573`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"MapPlot", "[", "\[IndentingNewLine]", 
+   RowBox[{"predictedMap", ",", "\[IndentingNewLine]", 
+    RowBox[{"ColorFunction", "\[Rule]", 
+     RowBox[{"ColorCortex", "[", 
+      RowBox[{"2", "\[Rule]", 
+       RowBox[{"{", 
+        RowBox[{"Eccentricity", ",", 
+         RowBox[{"Opacity", "\[Rule]", "0.75"}]}], "}"}]}], "]"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"Curvature", "\[Rule]", 
+     RowBox[{
+      RowBox[{"Field", "[", "predictedMap", "]"}], "[", 
+      RowBox[{"[", 
+       RowBox[{"All", ",", "4"}], "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+    
+    RowBox[{"ImageSize", "\[Rule]", 
+     RowBox[{"7", "*", "72"}]}]}], "]"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{"MapPlot", "[", "\[IndentingNewLine]", 
+  RowBox[{"predictedMap", ",", "\[IndentingNewLine]", 
+   RowBox[{"ColorFunction", "\[Rule]", 
+    RowBox[{"ColorCortex", "[", 
+     RowBox[{"1", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"PolarAngle", ",", 
+        RowBox[{"Opacity", "\[Rule]", "0.75"}]}], "}"}]}], "]"}]}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"Curvature", "\[Rule]", 
+    RowBox[{
+     RowBox[{"Field", "[", "predictedMap", "]"}], "[", 
+     RowBox[{"[", 
+      RowBox[{"All", ",", "4"}], "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+   RowBox[{"ImageSize", "\[Rule]", 
+    RowBox[{"7", "*", "72"}]}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.627068497791296*^9, 3.62706853532264*^9}, {
+   3.627068651605365*^9, 3.6270686572855377`*^9}, {3.627068733632807*^9, 
+   3.627068738863874*^9}, 3.627068907189179*^9, {3.6270689481015863`*^9, 
+   3.627068968879216*^9}, {3.630955352645608*^9, 3.63095535304643*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["", "Subsection",
+ CellChangeTimes->{{3.632076279434211*^9, 3.632076280535904*^9}, 
+   3.632076681080164*^9}],
+
+Cell["Make the surfaceField (for the FSAverageSym-topology sphere)", "Text",
+ CellChangeTimes->{{3.632076288873084*^9, 3.632076302991138*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"surfaceField", "=", 
+   RowBox[{"Table", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"None", ",", "None", ",", "None", ",", "None"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"Length", "[", 
+       RowBox[{"VertexList", "[", "FSAverageSymSphereSurface", "]"}], "]"}], 
+      "}"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"surfaceField", "=", 
+   RowBox[{"ReplacePart", "[", "\[IndentingNewLine]", 
+    RowBox[{"surfaceField", ",", "\[IndentingNewLine]", 
+     RowBox[{"Thread", "[", 
+      RowBox[{
+       RowBox[{"DomainIndices", "[", 
+        RowBox[{"SubMap", "[", 
+         RowBox[{
+          RowBox[{"aggSubjects", "[", 
+           RowBox[{"[", "1", "]"}], "]"}], ",", "LH"}], "]"}], "]"}], 
+       "\[Rule]", "predictedField"}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"surfaceField", "=", 
+   RowBox[{"surfaceField", "[", 
+    RowBox[{"[", 
+     RowBox[{"All", ",", 
+      RowBox[{"1", ";;", "3"}]}], "]"}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.6320763139611187`*^9, 3.632076314208033*^9}}],
+
+Cell["Resample this field to the native subject space", "Text",
+ CellChangeTimes->{{3.6320763236463327`*^9, 3.63207633081278*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"subSurfaceField", "=", 
+   RowBox[{"Field", "@", 
+    RowBox[{"SurfaceResample", "[", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"surfaceField", "\[Rule]", "FSAverageSymSphereSurface"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"SubjectSphereSurface", "[", 
+       RowBox[{
+        RowBox[{"aggSubjects", "[", 
+         RowBox[{"[", "1", "]"}], "]"}], ",", "LH"}], "]"}]}], "]"}]}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.63207634199739*^9, 3.632076347227564*^9}}],
+
+Cell["And export", "Text",
+ CellChangeTimes->{{3.6320763550010223`*^9, 3.632076355979109*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", "\[IndentingNewLine]", 
+   RowBox[{
+   "\"\<~/data/Retinotopy/GKA/10152014/prfs/mh_template_pRFs.mgz\>\"", ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", "subSurfaceField", "}"}], "/.", 
+     RowBox[{"None", "\[Rule]", "99999"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"\"\<GZIP\>\"", ",", "\"\<MGH\>\""}], "}"}]}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.632150800517563*^9, 3.632150816613846*^9}, {
+  3.632229491000448*^9, 3.632229521905826*^9}, {3.63222958779215*^9, 
+  3.632229588284729*^9}}]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1920, 1155},
+WindowMargins->{{3840, Automatic}, {Automatic, -1}},
+ShowSelection->True,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 4, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[422, 15, 147, 2, 64, "Section"],
+Cell[572, 19, 350, 6, 30, "Text"],
+Cell[CellGroupData[{
+Cell[947, 29, 118, 1, 44, "Subsection"],
+Cell[CellGroupData[{
+Cell[1090, 34, 103, 1, 35, "Subsubsection"],
+Cell[1196, 37, 395, 7, 30, "Text"],
+Cell[1594, 46, 646, 10, 80, "Input"],
+Cell[2243, 58, 213, 4, 30, "Text"],
+Cell[2459, 64, 1555, 37, 80, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4063, 107, 107, 1, 44, "Subsection"],
+Cell[4173, 110, 271, 5, 49, "Text"],
+Cell[CellGroupData[{
+Cell[4469, 119, 108, 1, 35, "Subsubsection"],
+Cell[4580, 122, 6308, 142, 539, "Input"],
+Cell[10891, 266, 2966, 69, 318, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13894, 340, 143, 1, 35, "Subsubsection"],
+Cell[14040, 343, 2566, 62, 352, "Input"],
+Cell[16609, 407, 3055, 71, 403, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[19713, 484, 112, 1, 44, "Subsection"],
+Cell[CellGroupData[{
+Cell[19850, 489, 116, 1, 35, "Subsubsection"],
+Cell[19969, 492, 296, 6, 49, "Text"],
+Cell[20268, 500, 29316, 617, 2273, "Input"],
+Cell[49587, 1119, 1458, 32, 250, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[51094, 1157, 162, 2, 44, "Subsection"],
+Cell[51259, 1161, 604, 9, 49, "Text"],
+Cell[CellGroupData[{
+Cell[51888, 1174, 129, 1, 35, "Subsubsection"],
+Cell[52020, 1177, 1893, 44, 131, "Input"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[53974, 1228, 162, 2, 64, "Section"],
+Cell[54139, 1232, 1855, 28, 220, "Text"],
+Cell[CellGroupData[{
+Cell[56019, 1264, 106, 1, 44, "Subsection"],
+Cell[56128, 1267, 1271, 26, 239, "Text"],
+Cell[57402, 1295, 1007, 14, 28, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[58446, 1314, 113, 1, 44, "Subsection"],
+Cell[58562, 1317, 295, 5, 49, "Text"],
+Cell[58860, 1324, 1527, 28, 80, "Input"],
+Cell[60390, 1354, 240, 3, 28, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[60667, 1362, 109, 1, 44, "Subsection"],
+Cell[CellGroupData[{
+Cell[60801, 1367, 166, 2, 35, "Subsubsection"],
+Cell[60970, 1371, 441, 9, 125, "Text"],
+Cell[61414, 1382, 728, 17, 80, "Input"],
+Cell[62145, 1401, 3670, 87, 319, "Input"],
+Cell[65818, 1490, 1595, 22, 28, "Input"],
+Cell[67416, 1514, 3592, 80, 370, "Input"],
+Cell[71011, 1596, 459, 6, 28, "Input"],
+Cell[71473, 1604, 218, 3, 28, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[71728, 1612, 120, 1, 35, "Subsubsection"],
+Cell[71851, 1615, 230, 5, 30, "Text"],
+Cell[72084, 1622, 2649, 53, 166, "Input"],
+Cell[74736, 1677, 3091, 71, 268, "Input"],
+Cell[CellGroupData[{
+Cell[77852, 1752, 132, 2, 40, "Input"],
+Cell[77987, 1756, 1278, 19, 28, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[79314, 1781, 230, 3, 35, "Subsubsection"],
+Cell[79547, 1786, 989, 25, 334, "Text"],
+Cell[80539, 1813, 5024, 81, 250, "Input"],
+Cell[85566, 1896, 315, 6, 56, "Text"],
+Cell[85884, 1904, 7042, 130, 454, "Input"],
+Cell[92929, 2036, 1078, 15, 63, "Input"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[94068, 2058, 260, 3, 64, "Section"],
+Cell[CellGroupData[{
+Cell[94353, 2065, 148, 2, 44, "Subsection"],
+Cell[94504, 2069, 908, 12, 28, "Input"],
+Cell[95415, 2083, 428, 7, 30, "Text"],
+Cell[95846, 2092, 3201, 53, 114, "Input"],
+Cell[CellGroupData[{
+Cell[99072, 2149, 166, 2, 35, "Subsubsection"],
+Cell[99241, 2153, 3835, 62, 486, "Text"],
+Cell[103079, 2217, 10321, 225, 983, "Input"],
+Cell[113403, 2444, 92, 1, 28, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[113532, 2450, 119, 1, 35, "Subsubsection"],
+Cell[113654, 2453, 2195, 33, 201, "Text"],
+Cell[CellGroupData[{
+Cell[115874, 2490, 3207, 66, 216, "Input"],
+Cell[119084, 2558, 771, 14, 24, "Message"]
+}, Open  ]],
+Cell[119870, 2575, 270, 4, 28, "Input"],
+Cell[120143, 2581, 1897, 36, 148, "Input"],
+Cell[122043, 2619, 727, 17, 114, "Input"],
+Cell[122773, 2638, 70, 1, 28, "Input"],
+Cell[122846, 2641, 147, 2, 28, "Input"],
+Cell[122996, 2645, 159, 2, 46, "Input"],
+Cell[123158, 2649, 92, 1, 28, "Input"],
+Cell[123253, 2652, 92, 1, 28, "Input"],
+Cell[123348, 2655, 92, 1, 28, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[123489, 2662, 175, 2, 44, "Subsection"],
+Cell[123667, 2666, 616, 10, 49, "Text"],
+Cell[124286, 2678, 298, 7, 28, "Input"],
+Cell[124587, 2687, 1056, 27, 46, "Input"],
+Cell[125646, 2716, 116, 1, 30, "Text"],
+Cell[125765, 2719, 1680, 39, 199, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[127482, 2763, 114, 2, 44, "Subsection"],
+Cell[127599, 2767, 142, 1, 30, "Text"],
+Cell[127744, 2770, 1165, 31, 131, "Input"],
+Cell[128912, 2803, 130, 1, 30, "Text"],
+Cell[129045, 2806, 522, 13, 63, "Input"],
+Cell[129570, 2821, 94, 1, 30, "Text"],
+Cell[129667, 2824, 595, 14, 80, "Input"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+

@@ -67,6 +67,6 @@ make_pRF(session_dir,subject_name,runs,ROI)
 %% Copy over template fits
 % Take the output from Mathematica, transfer it back to .nii.gz format,
 %   adjust the polar angle values back to radians.
-post_template(session_dir,subject_name)
+template_pRF(session_dir,subject_name)
 
         
