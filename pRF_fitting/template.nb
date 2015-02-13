@@ -3,10 +3,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[         0,          0]
-NotebookDataLength[    135313,       3003]
-NotebookOptionsPosition[    130290,       2842]
-NotebookOutlinePosition[    130672,       2859]
-CellTagsIndexPosition[    130629,       2856]
+NotebookDataLength[    135331,       3002]
+NotebookOptionsPosition[    130308,       2841]
+NotebookOutlinePosition[    130690,       2858]
+CellTagsIndexPosition[    130647,       2855]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -2826,8 +2826,7 @@ Cell[BoxData[
  RowBox[{
   RowBox[{"Export", "[", "\[IndentingNewLine]", 
    RowBox[{
-   "\"\<~/data/Retinotopy/GKA/10152014/prfs/mh_template_pRFs.mgz\>\"", ",", 
-    "\[IndentingNewLine]", 
+   "\"\<<output_dir>/mh_template_pRFs.mgz\>\"", ",", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"{", "subSurfaceField", "}"}], "/.", 
      RowBox[{"None", "\[Rule]", "99999"}]}], ",", "\[IndentingNewLine]", 
@@ -2836,7 +2835,7 @@ Cell[BoxData[
   ";"}]], "Input",
  CellChangeTimes->{{3.632150800517563*^9, 3.632150816613846*^9}, {
   3.632229491000448*^9, 3.632229521905826*^9}, {3.63222958779215*^9, 
-  3.632229588284729*^9}}]
+  3.632229588284729*^9}, {3.632851414130598*^9, 3.632851417735807*^9}}]
 }, Open  ]]
 }, Open  ]]
 },
@@ -2995,7 +2994,7 @@ Cell[127744, 2770, 1165, 31, 131, "Input"],
 Cell[128912, 2803, 130, 1, 30, "Text"],
 Cell[129045, 2806, 522, 13, 63, "Input"],
 Cell[129570, 2821, 94, 1, 30, "Text"],
-Cell[129667, 2824, 595, 14, 80, "Input"]
+Cell[129667, 2824, 613, 13, 80, "Input"]
 }, Open  ]]
 }, Open  ]]
 }
