@@ -4,6 +4,8 @@
 % First session (A092014B)
 subject = 'A092014B'; session_dir = '/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B'; denoise(session_dir,subject,1);
 
+% Running in 30551.pts-3.chead
+
 % Second session (A092714B)
 subject = 'A092014B'; session_dir = '/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B'; denoise(session_dir,subject,1);
 

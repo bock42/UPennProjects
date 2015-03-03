@@ -1,0 +1,22 @@
+#!/bin/bash
+#$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_session_segment_wm.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run01.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run02.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run03.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run04.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run05.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run06.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run07.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run08.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run09.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run10.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run11.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run12.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run13.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run14.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run15.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run16.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run17.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run18.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run19.sh
+$SGE_ROOT/bin/linux-x64/qsub -binding linear:5 -pe unihost 5 -l h_vmem=40.2G,s_vmem=40G -M mspits@sas.upenn.edu run_denoise_A092014B_run20.sh
