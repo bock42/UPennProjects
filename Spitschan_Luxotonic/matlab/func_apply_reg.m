@@ -43,7 +43,8 @@ for s = 1:length(session_dirs)
         
         direction = tmp{3};
         runNum = tmp{2};
-        func_new = [direction '_' runNum];
+	[~, id] = fileparts(d{r});
+        func_new = [direction '_' id '_' runNum];
         
         % Overwrite example_func2standard.nii.gz
         system(['flirt -in ' fullfile(session_dir,d{r}, func) ...

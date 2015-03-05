@@ -30,7 +30,7 @@ set fmri(featwatcher_yn) 1
 set fmri(sscleanup_yn) 0
 
 # Output directory
-set fmri(outputdir) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092x14B/xrun.gfeat"
+set fmri(outputdir) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M12x514S/xrun.gfeat"
 
 # TR(s)
 set fmri(tr) 2
@@ -278,112 +278,112 @@ set fmri(copeinput.4) 1
 set fmri(copeinput.5) 1
 
 # 4D AVW data or FEAT directory (1)
-set feat_files(1) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_02_Isochromatic_series_7/firstlevel.feat"
+set feat_files(1) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_03_Isochromatic_series_10/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (2)
-set feat_files(2) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_03_Isochromatic_series_8/firstlevel.feat"
+set feat_files(2) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_04_Isochromatic_series_11/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (3)
-set feat_files(3) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_08_Isochromatic_series_13/firstlevel.feat"
+set feat_files(3) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_09_Isochromatic_series_16/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (4)
-set feat_files(4) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_11_Isochromatic_series_16/firstlevel.feat"
+set feat_files(4) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_12_Isochromatic_series_19/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (5)
-set feat_files(5) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_16_Isochromatic_series_21/firstlevel.feat"
+set feat_files(5) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_17_Isochromatic_series_24/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (6)
-set feat_files(6) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_17_Isochromatic_series_22/firstlevel.feat"
+set feat_files(6) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_18_Isochromatic_series_25/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (7)
-set feat_files(7) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_03_Isochromatic_series_8/firstlevel.feat"
+set feat_files(7) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_03_Isochromatic_series_9/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (8)
-set feat_files(8) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_04_Isochromatic_series_9/firstlevel.feat"
+set feat_files(8) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_04_Isochromatic_series_10/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (9)
-set feat_files(9) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_09_Isochromatic_series_14/firstlevel.feat"
+set feat_files(9) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_09_Isochromatic_series_15/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (10)
-set feat_files(10) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_12_Isochromatic_series_17/firstlevel.feat"
+set feat_files(10) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_12_Isochromatic_series_18/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (11)
-set feat_files(11) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_17_Isochromatic_series_22/firstlevel.feat"
+set feat_files(11) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_17_Isochromatic_series_23/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (12)
-set feat_files(12) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_18_Isochromatic_series_23/firstlevel.feat"
+set feat_files(12) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_18_Isochromatic_series_24/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (13)
-set feat_files(13) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_06_LMS_series_11/firstlevel.feat"
+set feat_files(13) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_07_LMS_series_14/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (14)
-set feat_files(14) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_07_LMS_series_12/firstlevel.feat"
+set feat_files(14) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_08_LMS_series_15/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (15)
-set feat_files(15) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_09_LMS_series_14/firstlevel.feat"
+set feat_files(15) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_10_LMS_series_17/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (16)
-set feat_files(16) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_10_LMS_series_15/firstlevel.feat"
+set feat_files(16) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_11_LMS_series_18/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (17)
-set feat_files(17) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_12_LMS_series_17/firstlevel.feat"
+set feat_files(17) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_13_LMS_series_20/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (18)
-set feat_files(18) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_13_LMS_series_18/firstlevel.feat"
+set feat_files(18) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_14_LMS_series_21/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (19)
-set feat_files(19) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_07_LMS_series_12/firstlevel.feat"
+set feat_files(19) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_07_LMS_series_13/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (20)
-set feat_files(20) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_08_LMS_series_13/firstlevel.feat"
+set feat_files(20) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_08_LMS_series_14/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (21)
-set feat_files(21) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_10_LMS_series_15/firstlevel.feat"
+set feat_files(21) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_10_LMS_series_16/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (22)
-set feat_files(22) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_11_LMS_series_16/firstlevel.feat"
+set feat_files(22) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_11_LMS_series_17/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (23)
-set feat_files(23) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_13_LMS_series_18/firstlevel.feat"
+set feat_files(23) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_13_LMS_series_19/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (24)
-set feat_files(24) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_14_LMS_series_19/firstlevel.feat"
+set feat_files(24) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_14_LMS_series_20/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (25)
-set feat_files(25) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_01_Melanopsin_series_6/firstlevel.feat"
+set feat_files(25) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_02_Melanopsin_series_9/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (26)
-set feat_files(26) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_04_Melanopsin_series_9/firstlevel.feat"
+set feat_files(26) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_05_Melanopsin_series_12/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (27)
-set feat_files(27) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_05_Melanopsin_series_10/firstlevel.feat"
+set feat_files(27) "/data/jag/mspitsc0an/Imaging/Protocols/MRLuxotonic/M120514S/RUN_06_Melanopsin_series_13/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (28)
-set feat_files(28) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_14_Melanopsin_series_19/firstlevel.feat"
+set feat_files(28) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_15_Melanopsin_series_22/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (29)
-set feat_files(29) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_15_Melanopsin_series_20/firstlevel.feat"
+set feat_files(29) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_16_Melanopsin_series_23/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (30)
-set feat_files(30) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092014B/RUN_18_Melanopsin_series_23/firstlevel.feat"
+set feat_files(30) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_19_Melanopsin_series_26/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (31)
-set feat_files(31) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_02_Melanopsin_series_7/firstlevel.feat"
+set feat_files(31) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_02_Melanopsin_series_8/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (32)
-set feat_files(32) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_05_Melanopsin_series_10/firstlevel.feat"
+set feat_files(32) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_05_Melanopsin_series_11/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (33)
-set feat_files(33) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_06_Melanopsin_series_11/firstlevel.feat"
+set feat_files(33) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_06_Melanopsin_series_12/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (34)
-set feat_files(34) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_15_Melanopsin_series_20/firstlevel.feat"
+set feat_files(34) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_15_Melanopsin_series_21/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (35)
-set feat_files(35) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_16_Melanopsin_series_21/firstlevel.feat"
+set feat_files(35) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_16_Melanopsin_series_22/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (36)
-set feat_files(36) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092714B/RUN_19_Melanopsin_series_24/firstlevel.feat"
+set feat_files(36) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M121514S/RUN_19_Melanopsin_series_25/firstlevel.feat"
 
 # Add confound EVs text file
 set fmri(confoundevs) 0
