@@ -72,19 +72,14 @@ end
 
 searchString = [direction '*fsaverage_sym*'];
 
-d = dir(fullfile(session_dir,searchString);
+d = dir(fullfile(session_dir,searchString));
 
 for r = 1:length(d)
-    %%
-    d{r}
-    
-    
-    %% Left hemisphere
     % Get the time series
-    ts = MRIread(fullfile(session_dir, d{r});
+    ts = MRIread(fullfile(session_dir, d(r).name));
     ts = squeeze(ts.vol);
     ts_v1 = ts(x_roi, :);
-    nVols = size(ts_v1_lh, 2);
+    nVols = size(ts_v1, 2);
    
 keyboard
     
