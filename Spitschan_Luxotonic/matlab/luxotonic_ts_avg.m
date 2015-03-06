@@ -72,44 +72,22 @@ end
 
 searchString = [direction '*fsaverage_sym*'];
 
-d = listdir(fullfile(session_dir,searchString),'dirs');
+d = dir(fullfile(session_dir,searchString);
 
 for r = 1:length(d)
     %%
     d{r}
-%     
-%     
-%     %% Left hemisphere
-%     % Get the time series
-%     ts = MRIread('filtered_func_data.bbr.lh.sym.mgh');
-%     ts = squeeze(ts.vol);
-%     ts_v1 = ts(x_roi, :);
-%     nVols = size(ts_v1, 2);
-%     
-%     % Get the mean
-%     mean_func = MRIread('mean_func.bbr.lh.sym.mgh');
-%     mean_func = squeeze(mean_func.vol);
-%     mean_func_v1_lh = mean_func(x_roi)';
-%     ts_v1_norm_lh = (ts_v1-repmat(mean_func_v1_lh, 1, nVols))./repmat(mean_func_v1_lh, 1, nVols);
-%     
-%     %% Right hemisphere
-%     % Get the time series
-%     ts = MRIread('filtered_func_data.bbr.rh.sym.mgh');
-%     ts = squeeze(ts.vol);
-%     ts_v1 = ts(x_roi, :);
-%     nVols = size(ts_v1, 2);
-%     
-%     % Get the mean
-%     mean_func = MRIread('mean_func.bbr.rh.sym.mgh');
-%     mean_func = squeeze(mean_func.vol);
-%     mean_func_v1_rh = mean_func(x_roi)';
-%     
-%     % Extract the time series in % signal change
-%     ts_v1_norm_rh = (ts_v1-repmat(mean_func_v1_rh, 1, nVols))./repmat(mean_func_v1_rh, 1, nVols);
-%     
-%     run(r).ts_v1_norm = [ts_v1_norm_lh ; ts_v1_norm_rh];
-%     run(r).ts_v1_mean = nanmean([ts_v1_norm_lh ; ts_v1_norm_rh])';
-%     
+    
+    
+    %% Left hemisphere
+    % Get the time series
+    ts = MRIread(fullfile(session_dir, d{r});
+    ts = squeeze(ts.vol);
+    ts_v1 = ts(x_roi, :);
+    nVols = size(ts_v1_lh, 2);
+   
+keyboard
+    
     
 end
 
