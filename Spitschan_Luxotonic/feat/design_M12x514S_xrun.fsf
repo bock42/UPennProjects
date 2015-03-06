@@ -356,7 +356,7 @@ set feat_files(25) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/
 set feat_files(26) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_05_Melanopsin_series_12/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (27)
-set feat_files(27) "/data/jag/mspitsc0an/Imaging/Protocols/MRLuxotonic/M120514S/RUN_06_Melanopsin_series_13/firstlevel.feat"
+set feat_files(27) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_06_Melanopsin_series_13/firstlevel.feat"
 
 # 4D AVW data or FEAT directory (28)
 set feat_files(28) "/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M120514S/RUN_15_Melanopsin_series_22/firstlevel.feat"
