@@ -90,6 +90,8 @@ mkdir(fullfile(out_dir, 'xrun.gfeat', 'surf'));
 for f = 1:length(theFunctionalFiles)
     theFile = theFunctionalFiles{f};
     theFileNew = strrep(theFile, '/', '_');
+    [~, tmp] = fileparts(theFileNew);
+    [~, theFileNew] = fileparts(tmp);
     
     system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader ' subjID ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz'])]);
     system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
