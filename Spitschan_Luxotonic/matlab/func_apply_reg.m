@@ -1,4 +1,4 @@
-function outdir = func_apply_reg(session_dirs,subjID,func,out_dir)
+function out_dir = func_apply_reg(session_dirs,subjID,func,out_dir)
 
 %   Following feat_stats, this function will apply registrations on any
 %   func file.
@@ -19,7 +19,7 @@ end
 feat_dir = 'firstlevel.feat';
 
 mkdir(fullfile(out_dir, 'timeseries'));
-outdir_t = fullfile(out_dir, 'timeseries');
+out_dir_t = fullfile(out_dir, 'timeseries');
 
 DO_VOL_REG = false;
 
@@ -53,12 +53,12 @@ for s = 1:length(session_dirs)
             % anatomy
             system(['flirt -in ' fullfile(session_dir,d{r}, func) ...
                 ' -ref ' fullfile(session_dir,d{r},feat_dir,'reg','standard.nii.gz') ' -out ' ...
-                fullfile(outdir, [func_new, '.timeseries.standard.nii.gz']) ...
+                fullfile(out_dir, [func_new, '.timeseries.standard.nii.gz']) ...
                 ' -init ' fullfile(session_dir,d{r},feat_dir,'reg','example_func2standard.mat') ...
                 ' -applyxfm']);
             system(['flirt -in ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ...
                 ' -ref ' fullfile(session_dir,d{r},feat_dir,'reg','standard.nii.gz') ' -out ' ...
-                fullfile(outdir, [func_new, '.mean.standard.nii.gz']) ...
+                fullfile(out_dir, [func_new, '.mean.standard.nii.gz']) ...
                 ' -init ' fullfile(session_dir,d{r},feat_dir,'reg','example_func2standard.mat') ...
                 ' -applyxfm']);
         end
@@ -66,18 +66,18 @@ for s = 1:length(session_dirs)
         % Then, convert per-run functional time series and mean to the
         % surface
         % Time series
-        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, func) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(outdir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz'])]);
-        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, func) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
         
-        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, func) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(outdir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz'])]);
-        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi rh']);
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, func) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi rh']);
         
         % Mean
-        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(outdir_t, [func_new, '.mean.' subjID '.lh.nii.gz'])]);
-        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir_t, [func_new, '.mean.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir_t, [func_new, '.mean.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.mean.' subjID '.lh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.mean.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.mean.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
         
-        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(outdir_t, [func_new, '.mean.' subjID '.rh.nii.gz'])]);
-        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir_t, [func_new, '.mean.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir_t, [func_new, '..mean.fsaverage_sym.rh.nii.gz']) ' --hemi rh']);
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.mean.' subjID '.rh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.mean.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '..mean.fsaverage_sym.rh.nii.gz']) ' --hemi rh']);
         
     end
 end
@@ -86,14 +86,14 @@ end
 theFunctionalFiles = {'cope1.feat/stats/zstat1.nii.gz' 'cope1.feat/stats/zstat2.nii.gz'  'cope1.feat/stats/zstat3.nii.gz'  ...
     'cope2.feat/stats/zstat1.nii.gz'  'cope2.feat/stats/zstat2.nii.gz'  'cope2.feat/stats/zstat3.nii.gz' ...
     'cope3.feat/stats/zstat1.nii.gz'  'cope3.feat/stats/zstat2.nii.gz'  'cope3.feat/stats/zstat3.nii.gz' };
-mkdir(fullfile(outdir, 'xrun.gfeat', 'surf'));
+mkdir(fullfile(out_dir, 'xrun.gfeat', 'surf'));
 for f = 1:length(theFunctionalFiles)
     theFile = theFunctionalFiles{f};
     theFileNew = strrep(theFile, '/', '_');
     
-    system(['mri_vol2surf --mov ' fullfile(outdir, 'xrun.gfeat', theFile) ' --regheader subjID --hemi lh --projfrac 0.5 --o ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz'])]);
-    system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+    system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader subjID --hemi lh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz'])]);
+    system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
         
-    system(['mri_vol2surf --mov ' fullfile(outdir, 'xrun.gfeat', theFile) ' --regheader subjID --hemi rh --projfrac 0.5 --o ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz'])]);
-    system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);    
+    system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader subjID --hemi rh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz'])]);
+    system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);    
 end
