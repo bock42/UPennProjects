@@ -66,7 +66,7 @@ for s = 1:length(session_dirs)
         
         
         % Subtract mean and divide by mean
-        system(['fslmaths ' fullfile(session_dir,d{r}, func) ' -div ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' -sub ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz'])]);
+        system(['fslmaths ' fullfile(session_dir,d{r}, func) ' -div ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' -sub ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz'])]);
         
         % Delete first 12 volumes
         system(['fslroi ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' 12 144']);
