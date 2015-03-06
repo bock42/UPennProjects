@@ -1,4 +1,4 @@
-function outdir = func_apply_reg(session_dirs,func,out_dir)
+function outdir = func_apply_reg(session_dirs,subjID,func,out_dir)
 
 %   Following feat_stats, this function will apply registrations on any
 %   func file.
@@ -20,6 +20,8 @@ feat_dir = 'firstlevel.feat';
 
 mkdir(fullfile(out_dir, 'timeseries'));
 outdir = fullfile(out_dir, 'timeseries');
+
+DO_VOL_REG = false;
 
 %% Loop through session directories
 for s = 1:length(session_dirs)
@@ -43,20 +45,55 @@ for s = 1:length(session_dirs)
         
         direction = tmp{3};
         runNum = tmp{2};
-	[~, id] = fileparts(session_dir);
+        [~, id] = fileparts(session_dir);
         func_new = [direction '_' id '_' runNum];
         
-        % Overwrite example_func2standard.nii.gz
-        system(['flirt -in ' fullfile(session_dir,d{r}, func) ...
-            ' -ref ' fullfile(session_dir,d{r},feat_dir,'reg','standard.nii.gz') ' -out ' ...
-            fullfile(outdir, [func_new, '.timeseries.standard.nii.gz']) ...
-            ' -init ' fullfile(session_dir,d{r},feat_dir,'reg','example_func2standard.mat') ...
-            ' -applyxfm']);
-        system(['flirt -in ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ...
-            ' -ref ' fullfile(session_dir,d{r},feat_dir,'reg','standard.nii.gz') ' -out ' ...
-            fullfile(outdir, [func_new, '.mean.standard.nii.gz']) ...
-            ' -init ' fullfile(session_dir,d{r},feat_dir,'reg','example_func2standard.mat') ...
-            ' -applyxfm']);
-
+        if DO_VOL_REG
+            % First, convert per-run functional timeseries and mean to subject
+            % anatomy
+            system(['flirt -in ' fullfile(session_dir,d{r}, func) ...
+                ' -ref ' fullfile(session_dir,d{r},feat_dir,'reg','standard.nii.gz') ' -out ' ...
+                fullfile(outdir, [func_new, '.timeseries.standard.nii.gz']) ...
+                ' -init ' fullfile(session_dir,d{r},feat_dir,'reg','example_func2standard.mat') ...
+                ' -applyxfm']);
+            system(['flirt -in ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ...
+                ' -ref ' fullfile(session_dir,d{r},feat_dir,'reg','standard.nii.gz') ' -out ' ...
+                fullfile(outdir, [func_new, '.mean.standard.nii.gz']) ...
+                ' -init ' fullfile(session_dir,d{r},feat_dir,'reg','example_func2standard.mat') ...
+                ' -applyxfm']);
+        end
+        
+        % Then, convert per-run functional time series and mean to the
+        % surface
+        % Time series
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, func) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(outdir, [func_new, '.timeseries.' subjID '.lh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, [func_new, '.timeseries.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+        
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, func) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(outdir, [func_new, '.timeseries.' subjID '.rh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi rh']);
+        
+        % Mean
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, firstlevel.feat', 'mean_func.nii.gz')) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(outdir, [func_new, '.mean.' subjID '.lh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, [func_new, '.mean.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, [func_new, '.mean.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+        
+        system(['mri_vol2surf --mov ' fullfile(session_dir,d{r}, firstlevel.feat', 'mean_func.nii.gz')) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(outdir, [func_new, '.mean.' subjID '.rh.nii.gz'])]);
+        system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, [func_new, '.mean.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, [func_new, '..mean.fsaverage_sym.rh.nii.gz']) ' --hemi rh']);
+        
     end
+end
+
+% Now, in the out dir, push some of the results through
+theFunctionalFiles = {'cope1.feat/stats/zstat1.nii.gz' 'cope1.feat/stats/zstat2.nii.gz'  'cope1.feat/stats/zstat3.nii.gz'  ...
+    'cope2.feat/stats/zstat1.nii.gz'  'cope2.feat/stats/zstat2.nii.gz'  'cope2.feat/stats/zstat3.nii.gz' ...
+    'cope3.feat/stats/zstat1.nii.gz'  'cope3.feat/stats/zstat2.nii.gz'  'cope3.feat/stats/zstat3.nii.gz' };
+mkdir(fullfile(outdir, 'xrun.gfeat', 'surf'));
+for f = 1:length(theFunctionalFiles)
+    theFile = theFunctionalFiles{f};
+    theFileNew = strrep(theFile, '/', '_');
+    
+    system(['mri_vol2surf --mov ' fullfile(outdir, 'xrun.gfeat', theFile) ' --regheader subjID --hemi lh --projfrac 0.5 --o ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz'])]);
+    system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+        
+    system(['mri_vol2surf --mov ' fullfile(outdir, 'xrun.gfeat', theFile) ' --regheader subjID --hemi rh --projfrac 0.5 --o ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz'])]);
+    system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(outdir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);    
 end
