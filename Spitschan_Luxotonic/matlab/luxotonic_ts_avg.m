@@ -84,7 +84,7 @@ for r = 1:length(d)
     ts_v1_avg = [ts_v1_avg mean(ts_v1)];
     
 end
-
+test_var = reshape(ts_v1_avg, 24, 24);
 keyboard
 
 %
