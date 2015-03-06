@@ -63,9 +63,13 @@ for s = 1:length(session_dirs)
                 ' -applyxfm']);
         end
         
+        
+        
         % Subtract mean and divide by mean
         system(['fslmaths ' fullfile(session_dir,d{r}, func) ' -div ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' -sub ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz'])]);
         
+        % Delete first 12 volumes
+        system(['fslroi ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' 12 144']);
         
         
         % Then, convert per-run functional time series and mean to the
@@ -76,7 +80,7 @@ for s = 1:length(session_dirs)
         
         system(['mri_vol2surf --mov ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz'])]);
         system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi rh']);
-
+        
     end
 end
 
