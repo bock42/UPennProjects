@@ -1,6 +1,6 @@
 
 %FEATRegisterToFSAnat(0, 0, pwd,'G092014A-MRLuxotonic')
-function [t, cyc_avg] = luxotonic_ts_avg(session_dir, direction, theFig, nPlots, plotInd, roi)
+function [t, cyc_avg] = luxotonic_ts_avg(session_dir, direction, roi)
 %   Registers functional runs in feat to freesurfer anatomical
 %
 %   Usage:
@@ -27,7 +27,7 @@ function [t, cyc_avg] = luxotonic_ts_avg(session_dir, direction, theFig, nPlots,
 %   2) mh_smooth_surf_cope#.nii.gz; cope, smoothed on surface, 5mm kernel
 %   3) mh_surf_tstat#.nii.gz; tstat, unsmoothed
 %   4) mh_smooth_surf_tstat#.nii.gz; tstat, smoothed on surface, 5mm kernel
-%   5) mh_surf_zstat#.nii.gz; zstat, unsmoothed
+%   5) mh_surf_zstat#.nii.gz; zstatttt, unsmoothed
 %   6) mh_smooth_surf_zstat#.nii.gz; zstat, smoothed on surface, 5mm kernel
 %
 %   Written by Andrew S Bock Sept 2014
@@ -75,6 +75,9 @@ searchString = [direction '_*timeseries*fsaverage_sym*'];
 d = dir(fullfile(session_dir,searchString));
 ts_v1_avg = [];
 
+
+
+ts_v1_vox{length(x_roi)} = [];
 for r = 1:length(d)
     % Get the time series
     ts = MRIread(fullfile(session_dir, d(r).name));
@@ -83,11 +86,20 @@ for r = 1:length(d)
     nVols = size(ts_v1, 2);
     ts_v1_avg = [ts_v1_avg mean(ts_v1)];
     
+    % Experimental test
+for i = 1:size(ts_v1, 1);
+    ts_v1_vox{i} = [ts_v1_vox{i} mean(reshape(ts_v1(i, :), 24, 6), 2)];
 end
-test_var = reshape(ts_v1_avg, 24, 144);
-figure(theFig)
-subplot(nPlots, 1, plotInd);
-plot(100*mean(test_var, 2));
+
+    
+end
+% test_var = reshape(ts_v1_avg, 24, 144);
+% 
+% t1 = (0:1:nVols-1)*trSecs;
+% t = t1;
+% cyc_avg = mean(test_var, 2);
+
+
 
 %
 % % Make plots
