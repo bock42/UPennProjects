@@ -1,4 +1,4 @@
-function out_dir = func_apply_reg(session_dirs,subjID,func,out_dir)
+function out_dir = func_apply_reg(session_dirs,subjID,func,out_dir,calc_xrun)
 
 %   Following feat_stats, this function will apply registrations on any
 %   func file.
@@ -84,6 +84,7 @@ for s = 1:length(session_dirs)
     end
 end
 
+if calc_xrun
 % Now, in the out dir, push some of the results through
 theFunctionalFiles = {'cope1.feat/stats/zstat1.nii.gz' 'cope1.feat/stats/zstat2.nii.gz'  'cope1.feat/stats/zstat3.nii.gz'  ...
     'cope2.feat/stats/zstat1.nii.gz'  'cope2.feat/stats/zstat2.nii.gz'  'cope2.feat/stats/zstat3.nii.gz' ...
@@ -100,4 +101,5 @@ for f = 1:length(theFunctionalFiles)
     
     system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader ' subjID ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz'])]);
     system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi rh']);
+end
 end
