@@ -57,11 +57,11 @@ switch roi
     case 'v1'
         
         %% Get V1
-        areas_t = MRIread(fullfile(SUBJECTS_DIR, 'fsaverage_sym/templates/areas-template.sym.mgh'));
-        v1 = find(areas_t.vol == 1);
+        areas_t = MRIread(fullfile(SUBJECTS_DIR, 'fsaverage_sym/templates/2014-10-29.areas-template.nii.gz'));
+        v1 = [find(areas_t.vol == 1) find(areas_t.vol == -1)];
         
         %% Get eccentricity map
-        eccen_t = MRIread(fullfile(SUBJECTS_DIR, 'fsaverage_sym/templates/eccen-template.sym.mgh'));
+        eccen_t = MRIread(fullfile(SUBJECTS_DIR, 'fsaverage_sym/templates/2014-10-29.eccen-template.nii.gz'));
         upperLimit = 13;
         lowerLimit = 3;
         eccen_range = find(eccen_t.vol > lowerLimit & eccen_t.vol < upperLimit);
