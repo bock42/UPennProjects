@@ -70,7 +70,7 @@ switch roi
         x_roi = intersect(v1, eccen_range);
 end
 
-searchString = [direction '*fsaverage_sym*lh*'];
+searchString = [direction '*timeseries*fsaverage_sym*'];
 
 d = dir(fullfile(session_dir,searchString));
 ts_v1_avg = [];
@@ -84,8 +84,10 @@ for r = 1:length(d)
     ts_v1_avg = [ts_v1_avg mean(ts_v1)];
     
 end
-test_var = reshape(ts_v1_avg, 24, 36);
-plot(mean(test_var, 2));
+test_var = reshape(ts_v1_avg, 24, 144);
+figure(theFig)
+subplot(nPlots, 1, plotInd);
+plot(100*mean(test_var, 2));
 
 %
 % % Make plots
