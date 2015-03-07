@@ -70,7 +70,7 @@ switch roi
         x_roi = intersect(v1, eccen_range);
 end
 
-searchString = [direction '*timeseries*fsaverage_sym*'];
+searchString = [direction '_*timeseries*fsaverage_sym*'];
 
 d = dir(fullfile(session_dir,searchString));
 ts_v1_avg = [];
