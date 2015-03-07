@@ -64,22 +64,22 @@ for s = 1:length(session_dirs)
         end
         
         
-        
+%         
 %         % Subtract mean and divide by mean
 %         system(['fslmaths ' fullfile(session_dir,d{r}, func) ' -sub ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' -div ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz'])]);
 %         
 %         % Delete first 12 volumes
 %         system(['fslroi ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' 12 144']);
 %         
-        
-        % Then, convert per-run functional time series and mean to the
-        % surface
-        % Time series
+%         
+%         % Then, convert per-run functional time series and mean to the
+%         % surface
+%         % Time series
 %         system(['mri_vol2surf --mov ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz'])]);
 %         system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
 %         
         system(['mri_vol2surf --mov ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz'])]);
-        system(['mri_surf2surf --srcsubject ' subjID '/xhhemi --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+        system(['mri_surf2surf --srcsubject ' subjID '/xhemi --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);
         
     end
 end
