@@ -85,19 +85,19 @@ for r = 1:length(d)
     ts_v1 = ts(x_roi, :);
     nVols = size(ts_v1, 2);
     ts_v1_avg = [ts_v1_avg mean(ts_v1)];
-    
-    % Experimental test
-for i = 1:size(ts_v1, 1);
-    ts_v1_vox{i} = [ts_v1_vox{i} mean(reshape(ts_v1(i, :), 24, 6), 2)];
-end
-
-    
-end
-% test_var = reshape(ts_v1_avg, 24, 144);
+%     
+%     % Experimental test
+% for i = 1:size(ts_v1, 1);
+%     ts_v1_vox{i} = [ts_v1_vox{i} mean(reshape(ts_v1(i, :), 24, 6), 2)];
+% end
 % 
-% t1 = (0:1:nVols-1)*trSecs;
-% t = t1;
-% cyc_avg = mean(test_var, 2);
+%     
+end
+test_var = reshape(ts_v1_avg, 24, 144);
+
+t1 = (0:1:nVols-1)*trSecs;
+t = t1;
+cyc_avg = mean(test_var, 2);
 
 
 
