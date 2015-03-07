@@ -79,7 +79,7 @@ for s = 1:length(session_dirs)
 %         system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
 %         
         system(['mri_vol2surf --mov ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz'])]);
-        system(['mri_surf2surf --srcsubject ' subjID '/xhhemi --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi rh']);
+        system(['mri_surf2surf --srcsubject ' subjID '/xhhemi --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
         
     end
 end
@@ -100,6 +100,6 @@ for f = 1:length(theFunctionalFiles)
 %     system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
 %     
     system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader ' subjID ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz'])]);
-    system(['mri_surf2surf --srcsubject ' subjID '/xhemi --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi rh']);
+    system(['mri_surf2surf --srcsubject ' subjID '/xhemi --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);
 end
 end
