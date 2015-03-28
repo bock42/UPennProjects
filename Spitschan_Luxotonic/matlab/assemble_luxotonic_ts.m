@@ -10,8 +10,8 @@
 %
 % session_dir = '/data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M12x514S/timeseries';
 % luxotonic_ts_avg(session_dir, 'Isochromatic', theFig, nPlots, 3, roi)
-close all;
-
+function assemble_luxotonic_ts(roi, minDeg, maxDeg);
+%close all;
 theDirections = {'Isochromatic', 'LMS', 'Melanopsin'};
 
 trSecs = 2;
@@ -26,15 +26,15 @@ for d = 1:length(theDirections);
     
     nPlots = 4;
     plotInd = 1;
-    roi = 'v1';
     session_dir = '/Data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/G092x14A/timeseries';
-    [t, cyc_avg1] = luxotonic_ts_avg(session_dir, dr, roi);
+    [t, cyc_avg1] = luxotonic_ts_avg(session_dir, dr, roi, minDeg, maxDeg);
+    cyc_avg1_xs{d} = cyc_avg1; 
     subplot(4, 3, 4+(d-1));
     %plot(t0, 0.03*square(2*pi*1/48*t0)+0.2, '-k'); hold on;
     
     plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]); hold on;
-    plot(t1, 100*mean(cyc_avg1, 2), '-k'); hold on;
-    xlim([-1 48]); ylim([-0.31 0.31]);
+    plot(t1, 100*mean(cyc_avg1, 2), '-r'); hold on;
+    xlim([-1 48]); ylim([-1.2 1.2]);
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
@@ -42,13 +42,14 @@ for d = 1:length(theDirections);
     set(0,'DefaultAxesTickDir', 'out'); box off; title('G092x14A');
     
     session_dir = '/Data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/A092x14B/timeseries';
-    [t, cyc_avg2] = luxotonic_ts_avg(session_dir, dr, roi);
+    [t, cyc_avg2] = luxotonic_ts_avg(session_dir, dr, roi, minDeg, maxDeg);
+    cyc_avg2_xs{d} = cyc_avg2;
     subplot(4, 3, 7+(d-1));
     %plot(t0, 0.03*square(2*pi*1/48*t0)+0.2, '-k'); hold on;
     
     plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]); hold on
-    plot(t1, 100*mean(cyc_avg2, 2), '-k'); hold on;
-    xlim([-1 48]); ylim([-0.31 0.31]);
+    plot(t1, 100*mean(cyc_avg2, 2), '-r'); hold on;
+    xlim([-1 48]); ylim([-1.2 1.2]);
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
@@ -57,19 +58,20 @@ for d = 1:length(theDirections);
     title('A092x14B');
     
     session_dir = '/Data/jag/mspitschan/Imaging/Protocols/MRLuxotonic/M12x514S/timeseries';
-    [t, cyc_avg3] = luxotonic_ts_avg(session_dir, dr, roi);
+    [t, cyc_avg3] = luxotonic_ts_avg(session_dir, dr, roi, minDeg, maxDeg);
+    yc_avg3_xs{d} = cyc_avg3;
     subplot(4, 3, 10+(d-1));
     %plot(t0, 0.03*square(2*pi*1/48*t0)+0.2, '-k'); hold on;
     plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]); hold on
-    plot(t1, 100*mean(cyc_avg3, 2), '-k'); hold on;
+    plot(t1, 100*mean(cyc_avg3, 2), '-r'); hold on;
     
-    xlim([-1 48]); ylim([-0.31 0.31]); xlabel('Time [s]');
+    xlim([-1 48]); ylim([-1.2 1.2]); xlabel('Time [s]');
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
     pbaspect([1 0.6 1]);
     set(0,'DefaultAxesTickDir', 'out'); box off;
-    title('M12x514S');w
+    title('M12x514S');
     
     %group average
     subplot(4, 3, d);
@@ -81,11 +83,11 @@ for d = 1:length(theDirections);
     trSecs = 2;
     t0 = (0:0.01:nVols-1)*trSecs;
     plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]); hold on;
-    plot(t0, 0.03*square(2*pi*1/48*t0+pi)-0.2, '-k'); hold on;
-    shadedErrorBar(t1, 100*mean_cyc_avg, 100*sem, '-k');
+    %plot(t0, 0.03*square(2*pi*1/48*t0+pi)-0.2, '-k'); hold on;
+    shadedErrorBar(t1, 100*mean_cyc_avg, 100*sem, '-r');
     %plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]);
     
-    xlim([-1 48]); ylim([-0.31 0.31]);
+    xlim([-1 48]); ylim([-1.2 1.2]);
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
@@ -99,6 +101,7 @@ end
 subplot(4, 3, 1);     title(theDirections{1});
 subplot(4, 3, 2);     title(theDirections{2});
 subplot(4, 3, 3);     title(theDirections{3});
-saveas(theFig, ['avg_' roi], 'pdf');
-set(theFig, 'PaperPosition', [0 0 8 8]); %Position plot at left hand corner with width 12 and height 8.
-set(theFig, 'PaperSize', [8 8]); %Set the paper to have width 12 and height 8.
+
+set(theFig, 'PaperPosition', [0 0 7 7]); %Position plot at left hand corner with width 12 and height 8.
+set(theFig, 'PaperSize', [7 7]); %Set the paper to have width 12 and height 8.
+saveas(theFig, ['comp_avg_' roi '_' num2str(minDeg) '_' num2str(maxDeg)], 'pdf');

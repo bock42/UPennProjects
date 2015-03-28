@@ -1,6 +1,6 @@
 
 %FEATRegisterToFSAnat(0, 0, pwd,'G092014A-MRLuxotonic')
-function [t, cyc_avg] = luxotonic_ts_avg(session_dir, direction, roi)
+function [t, cyc_avg] = luxotonic_ts_avg(session_dir, direction, roi, minDeg, maxDeg)
 %   Registers functional runs in feat to freesurfer anatomical
 %
 %   Usage:
@@ -50,9 +50,10 @@ switch roi
         s1 = find(s1_t.vol);
         x_roi = s1;
     case 'insula'
-        s1_t = MRIread('/Volumes/PASSPORT/MRLuxotonic/Subjects/G092x14A/BOLD/label.insula.G092x14A.sym.lh.surf.mgh');
-        s1 = find(s1_t.vol);
-        x_roi = s1;
+        a = dlmread('/Users/mspits/Desktop/insula.fsaverage_sym.label', ' ', 3);
+        %s1_t = MRIread('/Volumes/PASSPORT/MRLuxotonic/Subjects/G092x14A/BOLD/label.insula.G092x14A.sym.lh.surf.mgh');
+        %s1 = find(s1_t.vol);
+        x_roi = a(:, 1);
         
     case 'v1'
         
@@ -62,15 +63,15 @@ switch roi
         
         %% Get eccentricity map
         eccen_t = MRIread(fullfile(SUBJECTS_DIR, 'fsaverage_sym/templates/2014-10-29.eccen-template.nii.gz'));
-        upperLimit = 13;
-        lowerLimit = 3;
+        upperLimit = maxDeg;
+        lowerLimit = minDeg;
         eccen_range = find(eccen_t.vol > lowerLimit & eccen_t.vol < upperLimit);
         
         %% Find the intersecting vertices
         x_roi = intersect(v1, eccen_range);
 end
 
-searchString = [direction '_*timeseries*fsaverage_sym*'];
+searchString = [direction '_*.brf.tf.timeseries*fsaverage_sym*'];
 
 d = dir(fullfile(session_dir,searchString));
 ts_v1_avg = [];

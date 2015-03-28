@@ -46,7 +46,7 @@ for s = 1:length(session_dirs)
         direction = tmp{3};
         runNum = tmp{2};
         [~, id] = fileparts(session_dir);
-        func_new = [direction '_' id '_' runNum];
+        func_new = [direction '_' id '_' runNum '.' func];
         
         if DO_VOL_REG
             % First, convert per-run functional timeseries and mean to subject
@@ -64,26 +64,30 @@ for s = 1:length(session_dirs)
         end
         
         
+
+
+% NEED TO RUN get_mean_allSubs.sh
+%system(['fslmeants -i ' fullfile(session_dir,d{r}, func) ' -o ' fullfile(session_dir,d{r}, [func '.mean'])]);
 %         
 %         % Subtract mean and divide by mean
-%         system(['fslmaths ' fullfile(session_dir,d{r}, func) ' -sub ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' -div ' fullfile(session_dir,d{r}, 'firstlevel.feat', 'mean_func.nii.gz') ' ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz'])]);
+         system(['fslmaths ' fullfile(session_dir,d{r}, func) ' -sub ' fullfile(session_dir,d{r}, [func '.mean']) ' -div ' fullfile(session_dir,d{r}, [func '.mean']) ' ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz'])]);
 %         
 %         % Delete first 12 volumes
-%         system(['fslroi ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' 12 144']);
+         system(['fslroi ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' 12 144']);
 %         
 %         
 %         % Then, convert per-run functional time series and mean to the
 %         % surface
 %         % Time series
-%         system(['mri_vol2surf --mov ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz'])]);
-%         system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+         system(['mri_vol2surf --mov ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz'])]);
+         system(['mri_surf2surf --srcsubject ' subjID ' --srcsurfreg fsaverage_sym.sphere.reg --trgsurfreg sphere.reg --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
 %         
         system(['mri_vol2surf --mov ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '_exf.nii.gz']) ' --reg ' fullfile(session_dir,d{r}, 'brf_bbreg.dat') ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz'])]);
-        system(['mri_surf2surf --srcsubject ' subjID '/xhemi --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);
+        system(['mri_surf2surf --srcsubject ' subjID '/xhemi --srcsurfreg fsaverage_sym.sphere.reg --trgsurfreg sphere.reg --sval ' fullfile(out_dir_t, [func_new, '.timeseries.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir_t, [func_new, '.timeseries.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);
         
     end
 end
-
+calc_xrun = false;
 if calc_xrun
 % Now, in the out dir, push some of the results through
 theFunctionalFiles = {'cope1.feat/stats/zstat1.nii.gz' 'cope1.feat/stats/zstat2.nii.gz'  'cope1.feat/stats/zstat3.nii.gz'  ...
@@ -96,10 +100,10 @@ for f = 1:length(theFunctionalFiles)
     [~, tmp] = fileparts(theFileNew);
     [~, theFileNew] = fileparts(tmp);
     
-%     system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader ' subjID ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz'])]);
-%     system(['mri_surf2surf --srcsubject ' subjID ' --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
+     system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader ' subjID ' --hemi lh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz'])]);
+     system(['mri_surf2surf --srcsubject ' subjID ' --srcsurfreg fsaverage_sym.sphere.reg --trgsurfreg sphere.reg  --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.lh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.lh.nii.gz']) ' --hemi lh']);
 %     
     system(['mri_vol2surf --mov ' fullfile(out_dir, 'xrun.gfeat', theFile) ' --regheader ' subjID ' --hemi rh --projfrac 0.5 --o ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz'])]);
-    system(['mri_surf2surf --srcsubject ' subjID '/xhemi --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);
+    system(['mri_surf2surf --srcsubject ' subjID '/xhemi --srcsurfreg fsaverage_sym.sphere.reg --trgsurfreg sphere.reg --sval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.' subjID '.rh.nii.gz']) ' --trgsubject fsaverage_sym --tval ' fullfile(out_dir, 'xrun.gfeat', 'surf', [theFileNew, '.fsaverage_sym.rh.nii.gz']) ' --hemi lh']);
 end
 end
