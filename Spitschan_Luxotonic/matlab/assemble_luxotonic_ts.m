@@ -34,7 +34,7 @@ for d = 1:length(theDirections);
     
     plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]); hold on;
     plot(t1, 100*mean(cyc_avg1, 2), '-r'); hold on;
-    xlim([-1 48]); ylim([-1.2 1.2]);
+    xlim([-1 48]); ylim([-0.7 0.7]);
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
@@ -49,7 +49,7 @@ for d = 1:length(theDirections);
     
     plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]); hold on
     plot(t1, 100*mean(cyc_avg2, 2), '-r'); hold on;
-    xlim([-1 48]); ylim([-1.2 1.2]);
+    xlim([-1 48]); ylim([-0.7 0.7]);
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
@@ -65,7 +65,7 @@ for d = 1:length(theDirections);
     plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]); hold on
     plot(t1, 100*mean(cyc_avg3, 2), '-r'); hold on;
     
-    xlim([-1 48]); ylim([-1.2 1.2]); xlabel('Time [s]');
+    xlim([-1 48]); ylim([-0.7 0.7]); xlabel('Time [s]');
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
@@ -87,7 +87,7 @@ for d = 1:length(theDirections);
     shadedErrorBar(t1, 100*mean_cyc_avg, 100*sem, '-r');
     %plot([min(t0) max(t0)], [0 0], '-k', 'Color', [0.5 0.5 0.5]);
     
-    xlim([-1 48]); ylim([-1.2 1.2]);
+    xlim([-1 48]); ylim([-0.7 0.7]);
     if d == 1
         ylabel({'Signal' 'change [%]'});
     end
