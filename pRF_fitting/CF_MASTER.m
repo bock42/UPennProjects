@@ -86,7 +86,7 @@ create_occipital(session_dir,subject_name);
 ROI = 'prf_V1';
 hemis = {'lh' 'rh'};
 for hh = 1:length(hemis)
-    hemi = hemis{hh};    
+    hemi = hemis{hh};
     if strcmp(ROI,'V1');
         V1 = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz']));
         ROIverts = find(V1.vol<=1 & V1.vol >=-1);
@@ -109,8 +109,8 @@ seedSig3 = (0:.5:2)';
 seedSig = {seedSig1 seedSig2 seedSig3};
 hemis = {'lh' 'rh'};
 space = 'surface';
-trgROI = 'V1'; %%%%%%% change this, after you re-calculate distance for prf_V1
-func = 'sdbrf.tf';
+srcROI = 'cortex';
+trgROI = 'prf_V1';
 DoG = 1; % difference of Gaussians
 % Find bold run directories
 d = listdir(fullfile(session_dir,'*BOLD_*'),'dirs');
@@ -127,15 +127,38 @@ for rr = [2 4 6];
     for hh = 1:length(hemis)
         hemi = hemis{hh};
         % Get source indices
-        areas = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz'])); %%%%% adjust to pRF
-        V1ind = areas.vol<=1 & areas.vol >=-1;
-        V1_3ind = areas.vol<=3 & areas.vol >=-3;
-        V1_3ind(V1ind) = 0;
-        srcind = find(V1_3ind);
-        %srcfile = fullfile(session_dir,d{rr},'sdbrf.tf.nii.gz');
-        srcfile = fullfile(session_dir,d{rr},['sdbrf.tf_surf.' hemi '.nii.gz']);
+        if strcmp(trgROI,'V1')
+            areas = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz']));
+        elseif strcmp(trgROI,'prf_V1')
+            areas = load_nifti(fullfile(session_dir,[hemi '.areas_pRF.nii.gz']));
+        end
+        if strcmp(srcROI,'V3');
+            V1ind = areas.vol<=1 & areas.vol >=-1;
+            V1_3ind = areas.vol<=3 & areas.vol >=-3;
+            V1_3ind(V1ind) = 0;
+            srcind = find(V1_3ind);
+        elseif strcmp(srcROI,'cortex')
+            srcind = 1:length(areas.vol); % entire cortex
+        elseif strcmp(srcROI,'volume')
+            binfile = fullfile(session_dir,d{rr},'single_TR.nii.gz');
+            src = load_nifti(binfile);
+            srcind = find(src.vol > 0 & ~isnan(src.vol));
+        end
+        % Get target indices
+        if strcmp(trgROI,'V1');
+            V1 = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz']));
+            trgind = V1.vol<=1 & V1.vol >=-1;
+        elseif strcmp(trgROI,'prf_V1');
+            V1 = load_nifti(fullfile(session_dir,[hemi '.areas_pRF.nii.gz']));
+            trgind = V1.vol<=1 & V1.vol >=-1;
+        end
+        if strcmp(srcROI,'volume')
+            srcfile = fullfile(session_dir,d{rr},'sdbrf.tf.nii.gz');
+        elseif strcmp(srcROI,'cortex')
+            srcfile = fullfile(session_dir,d{rr},['sdbrf.tf_surf.' hemi '.nii.gz']);
+        end
         trgfile = fullfile(session_dir,d{rr},['sdbrf.tf_surf.' hemi '.nii.gz']);
-        do_CF(session_dir,subject_name,rr,space,func,srcfile,trgfile,srcind,trgROI,seedSig,hemi,DoG);
+        do_CF(session_dir,subject_name,rr,space,srcfile,trgfile,srcind,trgind,srcROI,trgROI,seedSig,hemi,DoG);
     end
 end
 %% Average CF maps across runs and hemispheres
