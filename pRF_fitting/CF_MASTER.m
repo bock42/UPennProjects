@@ -82,58 +82,67 @@ project_template(session_dir,subject_name,template_files)
 %% Create occipital ROI
 create_occipital(session_dir,subject_name);
 
-%% pRF analysis
-% Generates a population receptive field (pRF) estimate using data obtained
-%   while subjects viewed retinotopy stimuli (e.g. drifting bars). The
-%   resulting pRF maps are then averaged across runs.
-% If ROI = 'occipital', the averaged maps are plotted on the fsaverage_sym
-%   surface, averaged across hemispheres, and converted to a format for
-%   template fitting using Mathematica.
-runs = [1,3,5];
-ROI = 'cortex';
-do_pRF(session_dir,subject_name,runs,ROI)
-%% Run template fitting in Mathematica
-% In a notebook in Mathematica, run the template fitting developed by Noah
-%   Benson. The last line of that notebook saves a file (default:
-%   ~/Desktop/template_fitting.mgz).
-%% Create the pRF template .nii.gz files, using the output .mgz from Mathematica (above)
-% Takes the .mgz output from Mathematica, convertes to nii.gz and separates
-%   out the pol, ecc, and areas maps into individual volumes.
-create_pRF_template(session_dir,subject_name)
-%% Create the ccRF mat file
-% Takes ~2 hours / run with a 12 core computer
-% template = 'prf' % for cases
-nruns = 6; % set the number of runs (in this case 6)
-template = 'prf';
-func = 'sdbrf.tf';
-compute_distance = 1;
-for rr = 1:nruns
-    make_ccRF_mat(session_dir,subject_name,template,func,compute_distance)
+%% Calculate cortical distance (e.g. in V1)
+ROI = 'prf_V1';
+hemis = {'lh' 'rh'};
+for hh = 1:length(hemis)
+    hemi = hemis{hh};    
+    if strcmp(ROI,'V1');
+        V1 = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz']));
+        ROIverts = find(V1.vol<=1 & V1.vol >=-1);
+    elseif strcmp(ROI,'prf_V1');
+        V1 = load_nifti(fullfile(session_dir,[hemi '.areas_pRF.nii.gz']));
+        ROIverts = find(V1.vol<=1 & V1.vol >=-1);
+    end
+    calc_surface_distance(session_dir,subject_name,ROI,ROIverts,hemi);
 end
-%% ccRF analysis
-% Takes ~2 hours / run with a 12 core computer
-% Find cortico-cortical receptive fields (ccRF) within V1 for the specified
-% roi <default - 'occipital'>
-nruns = 6; % set the number of runs (in this case 6)
+%%
+session_dir = '/Users/abock/data/Retinotopy/ASB/10272014';
+subject_name = 'ASB_10272014_MPRAGE_ACPC_7T';
+% seedSig1 = linspace(1,5,3); % millimeters
+% seedSig2 = linspace(6,10,3);
+% seedSig3 = linspace(0,10,3);
+% seedSig = [seedSig1',seedSig2',seedSig3'];
+seedSig1 = (.5:.5:15)';
+seedSig2 = [1.1;2;4;8];
+seedSig3 = (0:.5:2)';
+seedSig = {seedSig1 seedSig2 seedSig3};
+hemis = {'lh' 'rh'};
+space = 'surface';
+trgROI = 'V1'; %%%%%%% change this, after you re-calculate distance for prf_V1
 func = 'sdbrf.tf';
-template = 'prf';
-roi = 3; % 1 - V1; 2 - V1-V3 template; 3 - occipital; 4 - cortex; 5 - subcortical
-for rr = 1:nruns
-    do_ccRF(session_dir,template,rr,func,roi)
+DoG = 1; % difference of Gaussians
+% Find bold run directories
+d = listdir(fullfile(session_dir,'*BOLD_*'),'dirs');
+if isempty(d)
+    d = listdir(fullfile(session_dir,'*EPI_*'),'dirs');
 end
-%% Plot ccRF maps based on roi (3 = occipital, 4 = cortex, 5 = subcortical)
-nruns = 6; % set the number of runs (in this case 6)
-template = 'prf';
-func = 'sdbrf.tf';
-roi = 3;
-for rr = 1:nruns
-    plot_ccRF(session_dir,subject_name,rr,func,template,roi)
+if isempty(d)
+    d = listdir(fullfile(session_dir,'RUN*'),'dirs');
 end
-%% Average ccRF maps across runs and hemispheres
+nruns = length(d);
+disp(['Session_dir = ' session_dir]);
+disp(['Number of runs = ' num2str(nruns)]);
+for rr = [2 4 6];
+    for hh = 1:length(hemis)
+        hemi = hemis{hh};
+        % Get source indices
+        areas = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz'])); %%%%% adjust to pRF
+        V1ind = areas.vol<=1 & areas.vol >=-1;
+        V1_3ind = areas.vol<=3 & areas.vol >=-3;
+        V1_3ind(V1ind) = 0;
+        srcind = find(V1_3ind);
+        %srcfile = fullfile(session_dir,d{rr},'sdbrf.tf.nii.gz');
+        srcfile = fullfile(session_dir,d{rr},['sdbrf.tf_surf.' hemi '.nii.gz']);
+        trgfile = fullfile(session_dir,d{rr},['sdbrf.tf_surf.' hemi '.nii.gz']);
+        do_CF(session_dir,subject_name,rr,space,func,srcfile,trgfile,srcind,trgROI,seedSig,hemi,DoG);
+    end
+end
+%% Average CF maps across runs and hemispheres
 template = 'prf';
 func = 'sdbrf.tf';
 condition = 'movie';
 runs=[2 4 6]; % for AEK, bars = [1 2 5], movie = [3 4 6];
-roi = 4;
+roi = 5; % 1=V1; 2=V1_V3; 3=occipital; 4 = cortex; 5=subcortical;
 hemi = {'lh'};
-average_ccRF_runs(session_dir,condition,runs,func,template,roi,hemi)
+average_CF_runs(session_dir,condition,runs,func,template,roi,hemi)
