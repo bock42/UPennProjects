@@ -34,6 +34,9 @@ sort_nifti(session_dir);
 %   produced the typical commands for running through the Freesurfer pipeline
 %   for data collect at 3T.
 make_fieldmap(session_dir,subject_name);
+%% skull_strip
+% Creates skull stripped file MPRAGE_brain.nii.gz using FreeSurfer tools
+skull_strip(session_dir,subject_name);
 %% feat_mc_b0
 % Motion correct and B0 unwarp functional runs. This script has the option
 %   to despike data as well. The result will be a design file for feat, and
@@ -46,56 +49,85 @@ feat_mc_b0(session_dir,subject_name);
 %   bbregister for details regarding default settings (e.g. despike,
 %   feat_dir, func).
 register_feat(session_dir,subject_name);
-%% denoise
-% Removes low frequencies, as well as non-neuronal signals, using pulseOx,
-%   motion parameters, and anatomical ROIs (e.g. white matter, ventricles).
-%   If a block design was used, ensures that motion parameter regressors
-%   are orthogonal to the block contrasts.
-denoise(session_dir,subject_name);
+%% Create regressors for denoise
+% Creates a nuisance regressor text file, based on physiological noise
+%   and motion. If a task-design, the motion parameters are made orthogonal
+%   to the design.
+create_regressors(session_dir);
+%% Temporal Filter
+% Remove temporal frequencies. Default is to use the 'detrend' function,
+%   based on the 'type' input (see help temporal_filter). You can also pass
+%   'bptf' as the 'type' input, which can run high, low, or band-pass
+%   temporal filters.
+temporal_filter(session_dir);
+%% Segment freesurfer aseg.mgz volume
+% Segments the freesurfer anatomical aseg.mgz volume into several ROIs in
+%   the session_dir:
+%
+%   brain.nii.gz
+%   aseg.gm.nii.gz
+%   aseg.wm.nii.gz
+%   aseg.lh_ventricle.nii.gz
+%   aseg.rh_ventricle.nii.gz
+%   aseg.third_ventricle.nii.gz
+%   aseg.fourth_ventricle.nii.gz
+%   aseg.brainstem.nii.gz
+%   aseg.unknown.nii.gz
+segment_anat(session_dir,subject_name);
+%% Project anatomical ROIs to functional space
+% Projects anatomical ROIs into functional space in each bold directory:
+%   <func>.brain.nii.gz
+%   <func>.aseg.gm.nii.gz
+%   <func>.aseg.wm.nii.gz
+%   <func>.aseg.lh_ventricle.nii.gz
+%   <func>.aseg.rh_ventricle.nii.gz
+%   <func>.aseg.third_ventricle.nii.gz
+%   <func>.aseg.fourth_ventricle.nii.gz
+%   <func>.aseg.brainstem.nii.gz
+%   <func>.aseg.unknown.nii.gz
+project_anat2func(session_dir,subject_name);
+%% Create localWM timecourses
+% Creates local white matter timecourses for each voxel, and saves these
+%   timecourses as a 4D volume [func '.WMtc.nii.gz']. The default 'func'
+%   input is 'brf', so the final 4D volume will be 'brf.WMtc.nii.gz'. Will
+%   also return an output 4D matrix 'WMtc'.
+create_localWMtc(session_dir);
+%% Remove noise
+% Removes physiological and other non-neuronal noise regressors
+remove_noise(session_dir,subject_name);
 %% Clean up
 % Cleans up intermediate files and directories
 clean_up(session_dir)
 %% Smooth surface and volume
 % Smooth the volume and/or surface functional volumes using a 5mm kernel
-func = 'dbrf.tf';
-ROI = {'surface' 'volume'};
-hemi = {'lh' 'rh'};
-d = listdir(fullfile(session_dir,'*bold_*'),'dirs');
-nruns = length(d);
-poolobj = gcp; % Gets current pool, and if no pool, creates a new one
-disp('Smoothing 4D timeseries...')
-parfor rr = 1:nruns
-    smooth_vol_surf(session_dir,rr,func,ROI,hemi)
-end
-delete(poolobj); % close parpool
-disp('done.');
+smooth_vol_surf(session_dir);
 %% xhemi check
 % Checks that xhemireg and surfreg have been run for the specified
 % freesurfer subject.
 xhemi_check(session_dir,subject_name);
 %% Project retinotopic templates to subject space
-template_files = {...
-    '~/data/2014-10-29.eccen-template.nii.gz' ...
-    '~/data/2014-10-29.angle-template.nii.gz' ...
-    '~/data/2014-10-29.areas-template.nii.gz'};
-project_template(session_dir,subject_name,template_files)
+project_template(session_dir,subject_name)
 %% Create occipital ROI
 create_occipital(session_dir,subject_name);
 
 %% Calculate cortical distance (e.g. in V1)
-ROI = 'prf_V1';
 hemis = {'lh' 'rh'};
 for hh = 1:length(hemis)
     hemi = hemis{hh};
-    if strcmp(ROI,'V1');
-        V1 = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz']));
-        ROIverts = find(V1.vol<=1 & V1.vol >=-1);
-    elseif strcmp(ROI,'prf_V1');
-        V1 = load_nifti(fullfile(session_dir,[hemi '.areas_pRF.nii.gz']));
-        ROIverts = find(V1.vol<=1 & V1.vol >=-1);
-    end
-    calc_surface_distance(session_dir,subject_name,ROI,ROIverts,hemi);
+    calc_surface_distance(session_dir,subject_name,hemi);
 end
+%% run CF
+run_CF(session_dir,subject_name)
+
+%% Average CF runs
+template = 'prf';
+func = 'sdbrf.tf';
+condition = 'movie';
+runs=[2 4 6]; % for AEK, bars = [1 2 5], movie = [3 4 6];
+roi = 5; % 1=V1; 2=V1_V3; 3=occipital; 4 = cortex; 5=subcortical;
+hemi = {'lh'};
+average_CF_runs(session_dir,condition,runs,func,template,roi,hemi)
+
 %%
 session_dir = '/Users/abock/data/Retinotopy/ASB/10272014';
 subject_name = 'ASB_10272014_MPRAGE_ACPC_7T';
@@ -103,17 +135,31 @@ subject_name = 'ASB_10272014_MPRAGE_ACPC_7T';
 % seedSig2 = linspace(6,10,3);
 % seedSig3 = linspace(0,10,3);
 % seedSig = [seedSig1',seedSig2',seedSig3'];
-seedSig1 = (.5:.5:15)';
-seedSig2 = [1.1;2;4;8];
-seedSig3 = (0:.5:2)';
-seedSig = {seedSig1 seedSig2 seedSig3};
+% seedSig1 = (.5:.1:15)';
+% seedSig2 = (1.25:0.25:2)';
+% seedSig3 = (0:0.1:1)';
+
+% Use this for actual analysis
+% seedSig1 = (.5:.25:15)';
+% seedSig2 = (1.25:0.25:3)';
+% seedSig3 = (0:0.1:1)';
+% Use this for testing
+seedSig1 = (1:2:9)';
+seedSig2 = (1:.5:3)';
+seedSig3 = (0:0.25:1)';
+seedSig4 = (0:0.25:1)';
+seedSig = {seedSig1 seedSig2 seedSig3 seedSig4};
+
 hemis = {'lh' 'rh'};
-space = 'surface';
-srcROI = 'cortex';
+space = 'volume';
+srcROI = 'volume';
 trgROI = 'prf_V1';
 DoG = 1; % difference of Gaussians
 % Find bold run directories
 d = listdir(fullfile(session_dir,'*BOLD_*'),'dirs');
+if isempty(d)
+    d = listdir(fullfile(session_dir,'*bold_*'),'dirs');
+end
 if isempty(d)
     d = listdir(fullfile(session_dir,'*EPI_*'),'dirs');
 end
@@ -133,8 +179,8 @@ for rr = [2 4 6];
             areas = load_nifti(fullfile(session_dir,[hemi '.areas_pRF.nii.gz']));
         end
         if strcmp(srcROI,'V3');
-            V1ind = areas.vol<=1 & areas.vol >=-1;
-            V1_3ind = areas.vol<=3 & areas.vol >=-3;
+            V1ind = find(areas.vol<=1 & areas.vol >=-1);
+            V1_3ind = find(areas.vol<=3 & areas.vol >=-3);
             V1_3ind(V1ind) = 0;
             srcind = find(V1_3ind);
         elseif strcmp(srcROI,'cortex')
@@ -147,10 +193,10 @@ for rr = [2 4 6];
         % Get target indices
         if strcmp(trgROI,'V1');
             V1 = load_nifti(fullfile(session_dir,[hemi '.areas.nii.gz']));
-            trgind = V1.vol<=1 & V1.vol >=-1;
+            trgind = find(V1.vol<=1 & V1.vol >=-1);
         elseif strcmp(trgROI,'prf_V1');
             V1 = load_nifti(fullfile(session_dir,[hemi '.areas_pRF.nii.gz']));
-            trgind = V1.vol<=1 & V1.vol >=-1;
+            trgind = find(V1.vol<=1 & V1.vol >=-1);
         end
         if strcmp(srcROI,'volume')
             srcfile = fullfile(session_dir,d{rr},'sdbrf.tf.nii.gz');
