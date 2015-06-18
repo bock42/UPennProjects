@@ -34,6 +34,9 @@ sort_nifti(session_dir);
 %   produced the typical commands for running through the Freesurfer pipeline
 %   for data collect at 3T.
 make_fieldmap(session_dir,subject_name);
+%% skull_strip
+% Creates skull stripped file MPRAGE_brain.nii.gz using FreeSurfer tools
+skull_strip(session_dir,subject_name);
 %% feat_mc_b0
 % Motion correct and B0 unwarp functional runs. This script has the option
 %   to despike data as well. The result will be a design file for feat, and
@@ -46,42 +49,47 @@ feat_mc_b0(session_dir,subject_name);
 %   bbregister for details regarding default settings (e.g. despike,
 %   feat_dir, func).
 register_feat(session_dir,subject_name);
-%% denoise
-% Removes low frequencies, as well as non-neuronal signals, using pulseOx,
-%   motion parameters, and anatomical ROIs (e.g. white matter, ventricles).
-%   If a block design was used, ensures that motion parameter regressors
-%   are orthogonal to the block contrasts.
-denoise(session_dir,subject_name);
+%% Create regressors for denoise
+% Creates a nuisance regressor text file, based on physiological noise
+%   and motion. If a task-design, the motion parameters are made orthogonal
+%   to the design.
+create_regressors(session_dir);
+%% Temporal Filter
+% Remove temporal frequencies. Default is to use the 'detrend' function,
+%   based on the 'type' input (see help temporal_filter). You can also pass
+%   'bptf' as the 'type' input, which can run high, low, or band-pass
+%   temporal filters.
+temporal_filter(session_dir);
+%% Segment freesurfer aseg.mgz volume
+% Segments the freesurfer anatomical aseg.mgz volume into several ROIs in
+%   the session_dir.
+segment_anat(session_dir,subject_name);
+%% Project anatomical ROIs to functional space
+% Projects anatomical ROIs into functional space in each bold directory.
+project_anat2func(session_dir,subject_name);
+%% Create localWM timecourses
+% Creates local white matter timecourses for each voxel, and saves these
+%   timecourses as a 4D volume [func '.WMtc.nii.gz']. The default 'func'
+%   input is 'brf', so the final 4D volume will be 'brf.WMtc.nii.gz'. Will
+%   also return an output 4D matrix 'WMtc'.
+create_localWMtc(session_dir);
+%% Remove noise
+% Removes physiological and other non-neuronal noise regressors
+remove_noise(session_dir,subject_name);
 %% Clean up
 % Cleans up intermediate files and directories
 clean_up(session_dir)
 %% Smooth surface and volume
 % Smooth the volume and/or surface functional volumes using a 5mm kernel
-func = 'dbrf.tf';
-ROI = {'surface' 'volume'};
-hemi = {'lh' 'rh'};
-d = listdir(fullfile(session_dir,'*bold_*'),'dirs');
-nruns = length(d);
-poolobj = gcp; % Gets current pool, and if no pool, creates a new one
-disp('Smoothing 4D timeseries...')
-parfor rr = 1:nruns
-    smooth_vol_surf(session_dir,rr,func,ROI,hemi)
-end
-delete(poolobj); % close parpool
-disp('done.');
+smooth_vol_surf(session_dir);
 %% xhemi check
 % Checks that xhemireg and surfreg have been run for the specified
 % freesurfer subject.
 xhemi_check(session_dir,subject_name);
 %% Project retinotopic templates to subject space
-template_files = {...
-    '~/data/2014-10-29.eccen-template.nii.gz' ...
-    '~/data/2014-10-29.angle-template.nii.gz' ...
-    '~/data/2014-10-29.areas-template.nii.gz'};
-project_template(session_dir,subject_name,template_files)
+project_template(session_dir,subject_name)
 %% Create occipital ROI
 create_occipital(session_dir,subject_name);
-
 %% pRF analysis
 % Generates a population receptive field (pRF) estimate using data obtained
 %   while subjects viewed retinotopy stimuli (e.g. drifting bars). The
@@ -92,6 +100,10 @@ create_occipital(session_dir,subject_name);
 runs = [1,3,5];
 ROI = 'cortex';
 do_pRF(session_dir,subject_name,runs,ROI)
+%% Prepare for Mathematica
+SUBJECTS_DIR = '/jet/abock/freesurfer_subjects';
+prepare_pRF_Mathematica(session_dir,subject_name,SUBJECTS_DIR)
+
 %% Run template fitting in Mathematica
 % In a notebook in Mathematica, run the template fitting developed by Noah
 %   Benson. The last line of that notebook saves a file (default:
@@ -100,40 +112,9 @@ do_pRF(session_dir,subject_name,runs,ROI)
 % Takes the .mgz output from Mathematica, convertes to nii.gz and separates
 %   out the pol, ecc, and areas maps into individual volumes.
 create_pRF_template(session_dir,subject_name)
-%% Create the ccRF mat file
-% Takes ~2 hours / run with a 12 core computer
-% template = 'prf' % for cases
-nruns = 6; % set the number of runs (in this case 6)
-template = 'prf';
-func = 'sdbrf.tf';
-compute_distance = 1;
-for rr = 1:nruns
-    make_ccRF_mat(session_dir,subject_name,template,func,compute_distance)
+%% Calculate cortical distance (e.g. in V1)
+hemis = {'lh' 'rh'};
+for hh = 1:length(hemis)
+    hemi = hemis{hh};
+    calc_surface_distance(session_dir,subject_name,hemi);
 end
-%% ccRF analysis
-% Takes ~2 hours / run with a 12 core computer
-% Find cortico-cortical receptive fields (ccRF) within V1 for the specified
-% roi <default - 'occipital'>
-nruns = 6; % set the number of runs (in this case 6)
-func = 'sdbrf.tf';
-template = 'prf';
-roi = 3; % 1 - V1; 2 - V1-V3 template; 3 - occipital; 4 - cortex; 5 - subcortical
-for rr = 1:nruns
-    do_ccRF(session_dir,template,rr,func,roi)
-end
-%% Plot ccRF maps based on roi (3 = occipital, 4 = cortex, 5 = subcortical)
-nruns = 6; % set the number of runs (in this case 6)
-template = 'prf';
-func = 'sdbrf.tf';
-roi = 3;
-for rr = 1:nruns
-    plot_ccRF(session_dir,subject_name,rr,func,template,roi)
-end
-%% Average ccRF maps across runs and hemispheres
-template = 'prf';
-func = 'sdbrf.tf';
-condition = 'movie';
-runs=[2 4 6]; % for AEK, bars = [1 2 5], movie = [3 4 6];
-roi = 4;
-hemi = {'lh'};
-average_ccRF_runs(session_dir,condition,runs,func,template,roi,hemi)

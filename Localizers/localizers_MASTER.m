@@ -34,24 +34,48 @@ sort_nifti(session_dir);
 %   produced the typical commands for running through the Freesurfer pipeline
 %   for data collect at 3T.
 make_fieldmap(session_dir,subject_name);
+%% skull_strip
+% Creates skull stripped file MPRAGE_brain.nii.gz using FreeSurfer tools
+skull_strip(session_dir,subject_name);
 %% feat_mc_b0
 % Motion correct and B0 unwarp functional runs. This script has the option
 %   to despike data as well. The result will be a design file for feat, and
 %   the corresponding script to run feat in terminal. See 'help feat_mc_b0'
 %   for details regarding default settings (e.g. despike, TR, warp_dir).
 feat_mc_b0(session_dir,subject_name);
-%% bbregister
+%% register_feat
 % Registers the motion corrected and B0 unwarped functional volumes from
 %   feat_mc_b0 to the corresponding Freesurfer anatomical image. See 'help
-%   bbregister for details regarding default settings (e.g. despike,
+%   register_feat for details regarding default settings (e.g. despike,
 %   feat_dir, func).
 register_feat(session_dir,subject_name);
-%% denoise
-% Removes low frequencies, as well as non-neuronal signals, using pulseOx,
-%   motion parameters, and anatomical ROIs (e.g. white matter, ventricles).
-%   If a block design was used, ensures that motion parameter regressors
-%   are orthogonal to the block contrasts.
-denoise(session_dir,subject_name);
+%% Create regressors for denoise
+% Creates a nuisance regressor text file, based on physiological noise
+%   and motion. If a task-design, the motion parameters are made orthogonal
+%   to the design.
+create_regressors(session_dir);
+%% Temporal Filter
+% Remove temporal frequencies. Default is to use the 'detrend' function,
+%   based on the 'type' input (see help temporal_filter). You can also pass
+%   'bptf' as the 'type' input, which can run high, low, or band-pass
+%   temporal filters.
+temporal_filter(session_dir);
+%% Segment freesurfer aseg.mgz volume
+% Segments the freesurfer anatomical aseg.mgz volume into several ROIs in
+%   the session_dir.
+segment_anat(session_dir,subject_name);
+%% Project anatomical ROIs to functional space
+% Projects anatomical ROIs into functional space in each bold directory.
+project_anat2func(session_dir,subject_name);
+%% Create localWM timecourses
+% Creates local white matter timecourses for each voxel, and saves these
+%   timecourses as a 4D volume [func '.WMtc.nii.gz']. The default 'func'
+%   input is 'brf', so the final 4D volume will be 'brf.WMtc.nii.gz'. Will
+%   also return an output 4D matrix 'WMtc'.
+create_localWMtc(session_dir);
+%% Remove noise
+% Removes physiological and other non-neuronal noise regressors
+remove_noise(session_dir,subject_name);
 %% Clean up
 % Cleans up intermediate files and directories
 clean_up(session_dir)
@@ -75,31 +99,103 @@ for s = 1:length(session_dirs)
     delete(poolobj); % close parpool
     disp('done.');
 end
+%% Make contrasts
+d = listdir(fullfile(session_dir,'*bold_*'),'dirs');
+runNums = load(fullfile(session_dir,'runs.txt'));
+blockdur = 16;
+TR = 2;
+for rr = 1:length(runNums);
+    outputDir = fullfile(session_dir,d{rr});
+    make_contrasts(runNums(rr),outputDir,blockdur,TR);
+end
 %% First level GLM (feat_stats)
-func = 'dbrf.tf';
-session_dirs = {...
-     '/Users/abock/data/SC/ASB/10012014/' ...
-     '/Users/abock/data/SC/ASB/10022014/' ...
-     '/Users/abock/data/SC/ASB/10082014/'};
+func = 'sdbrf.tf';
+% session_dirs = {...
+%     '/Users/abock/data/SC/ASB/10012014/' ...
+%     '/Users/abock/data/SC/ASB/10022014/' ...
+%     '/Users/abock/data/SC/ASB/10082014/'};
+%session_dirs = {'/jet/abock/data/Retinotopy/ASB/06022015'};
+%session_dirs = {'/jet/abock/data/Retinotopy/GKA/06052015'};
+session_dirs = {'/jet/abock/data/Retinotopy/AEK/01152015'};
 for s = 1:length(session_dirs)
     session_dir = session_dirs{s};
     feat_stats(session_dir,func)
 end
 %% Higher level GLM (feat_higher_level)
-session_dirs = {...
-     '/Users/abock/data/SC/ASB/10012014/' ...
-     '/Users/abock/data/SC/ASB/10022014/' ...
-     '/Users/abock/data/SC/ASB/10082014/'};
-%session_dirs = {'/Users/abock/data/SC/AEK/01152015/'};
-subject_name = 'ASB_10012014_MPRAGE_ACPC_3T';
-alldirs = {[1 4 7 10 13 16] [2 5 8 11 14 17] [3 6 9 12 15 18]};
+% session_dirs = {...
+%     '/Users/abock/data/SC/ASB/10012014/' ...
+%     '/Users/abock/data/SC/ASB/10022014/' ...
+%     '/Users/abock/data/SC/ASB/10082014/'};
+%session_dirs = {'/jet/abock/data/Retinotopy/ASB/06022015'};
+%subject_name = 'ASB_10272014_MPRAGE_ACPC_7T';
+% session_dirs = {'/jet/abock/data/Retinotopy/GKA/06052015'};
+% subject_name = 'GKA_10152014_MPRAGE_ACPC_7T';
+session_dirs = {'/jet/abock/data/Retinotopy/AEK/01152015'};
+subject_name = 'AEK_09242014_MPRAGE_ACPC_7T';
+%alldirs = {[1 4 7 10 13 16] [2 5 8 11 14 17] [3 6 9 12 15 18]};
+%alldirs = {[1 3 5] [2 4 6]};
+%alldirs = {[1 2 3]};
 %alldirs = {[1 4] [2 5] [3 6]};
-func = 'dbrf.tf';
-%design_file = '/Users/Shared/Matlab/gkaguirrelab/Toolboxes/MRI_preprocessing/feat_higher_level_template_2dirs.fsf';
+alldirs = {[1 2 4 5]};
+func = 'sdbrf.tf';
+%design_file = '/Users/Shared/Matlab/gkaguirrelab/Toolboxes/MRI_preprocessing/feat_higher_level_template_3dirs.fsf';
+design_file = '/Users/Shared/Matlab/gkaguirrelab/Toolboxes/MRI_preprocessing/feat_higher_level_template_4dirs.fsf';
 for dd = 1:length(alldirs)
-    feat_higher_level(session_dirs,subject_name,alldirs{dd},func)
+    feat_higher_level(session_dirs,subject_name,alldirs{dd},func,design_file)
     %feat_higher_level(session_dirs,subject_name,alldirs{dd},func,design_file)
 end
+%% SC
+input_vol = 'mh.volume.avg.co.prfs.nii.gz';
+output_vol = 'lh.volume.SC.nii.gz';
+center_vox = [123 154 120]; % GKA rh; [132 155 119]; % GKA lh; [122 151 116]; % ASB rh; [132 152 115]; % ASB lh; [121 152 117]; % AEK rh ; [134 153 116]; % AEK lh;
+ROIsize = 75;
+find_ROI_voxels(input_vol,output_vol,center_vox,ROIsize,voxsize);
+
+%% LGN
+input_vol = 'mh.volume.avg.co.prfs.nii.gz';
+output_vol = 'lh.volume.LGN.nii.gz';
+center_vox = [108 154 124]; % GKA rh; [146 155 120]; % GKA lh; [107 152 120]; % ASB rh; [149 152 118]; % ASB lh; [107 153 119]; % AEK rh ;[148 154 116]; % AEK lh ;
+ROIsize = 200;
+find_ROI_voxels(input_vol,output_vol,center_vox,ROIsize,voxsize);
+
+%% Create subcortical ecc and pol pRF maps
+ecc = load_nifti('./mh.volume.avg.coecc.prfs.nii.gz');
+pol = load_nifti('./mh.volume.avg.copol.prfs.nii.gz');
+lhLGN = load_nifti('./lh.volume.LGN.nii.gz');
+lhSC = load_nifti('./lh.volume.SC.nii.gz');
+rhLGN = load_nifti('./rh.volume.LGN.nii.gz');
+rhSC = load_nifti('./rh.volume.SC.nii.gz');
+
+nlhLGN = lhLGN;
+nlhSC = lhSC;
+nrhLGN = rhLGN;
+nrhSC = rhSC;
+
+nlhLGN.vol = ecc.vol .* lhLGN.vol;
+save_nifti(nlhLGN,'./lh.volume.LGN.ecc.nii.gz');
+
+nlhSC.vol = ecc.vol .* lhSC.vol;
+save_nifti(nlhSC,'./lh.volume.SC.ecc.nii.gz');
+
+nrhLGN.vol = ecc.vol .* rhLGN.vol;
+save_nifti(nrhLGN,'./rh.volume.LGN.ecc.nii.gz');
+
+nrhSC.vol = ecc.vol .* rhSC.vol;
+save_nifti(nrhSC,'./rh.volume.SC.ecc.nii.gz');
+
+nlhLGN.vol = pol.vol .* lhLGN.vol;
+save_nifti(nlhLGN,'./lh.volume.LGN.pol.nii.gz');
+
+nlhSC.vol = pol.vol .* lhSC.vol;
+save_nifti(nlhSC,'./lh.volume.SC.pol.nii.gz');
+
+nrhLGN.vol = pol.vol .* rhLGN.vol;
+save_nifti(nrhLGN,'./rh.volume.LGN.pol.nii.gz');
+
+nrhSC.vol = pol.vol .* rhSC.vol;
+save_nifti(nrhSC,'./rh.volume.SC.pol.nii.gz');
+
+
 %% Create subcortical ROIs
 % Load in zstat volumes in fslview, create mask manually, thresholded at
 % z > 2.58 (p < 0.01)
@@ -107,11 +203,11 @@ end
 % z-stat > 2.58 for BOTH the dots and checkerboard stimulus, for cope3/4
 % (condition 1(2) > 2(1)).
 %% xhemi check
-% Check that xhemireg and 
+% Check that xhemireg and
 xhemi_check(session_dir,subject_name)
 %% Project zstats to surface
-session_dir = '/Users/abock/data/SC/GKA/09242014';
-subject_name = 'GKA_07302014_MPRAGE_ACPC_3T';
+session_dir = '/jet/abock/data/Retinotopy/ASB/06022015';
+subject_name = 'ASB_10272014_MPRAGE_ACPC_7T';
 run_dir = 'Series_007_BOLD_1.5mm_TR2000_mb4_P1_RUN9';
 % subject_name = 'AEK_09242014_MPRAGE_ACPC_7T';
 % session_dir = '/Users/abock/data/SC/AEK/01152015';

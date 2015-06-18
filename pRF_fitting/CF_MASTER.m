@@ -43,10 +43,10 @@ skull_strip(session_dir,subject_name);
 %   the corresponding script to run feat in terminal. See 'help feat_mc_b0'
 %   for details regarding default settings (e.g. despike, TR, warp_dir).
 feat_mc_b0(session_dir,subject_name);
-%% bbregister
+%% register_feat
 % Registers the motion corrected and B0 unwarped functional volumes from
 %   feat_mc_b0 to the corresponding Freesurfer anatomical image. See 'help
-%   bbregister for details regarding default settings (e.g. despike,
+%   register_feat for details regarding default settings (e.g. despike,
 %   feat_dir, func).
 register_feat(session_dir,subject_name);
 %% Create regressors for denoise
