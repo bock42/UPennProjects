@@ -43,10 +43,10 @@ skull_strip(session_dir,subject_name);
 %   the corresponding script to run feat in terminal. See 'help feat_mc_b0'
 %   for details regarding default settings (e.g. despike, TR, warp_dir).
 feat_mc_b0(session_dir,subject_name);
-%% register_feat
+%% bbregister
 % Registers the motion corrected and B0 unwarped functional volumes from
 %   feat_mc_b0 to the corresponding Freesurfer anatomical image. See 'help
-%   register_feat for details regarding default settings (e.g. despike,
+%   bbregister for details regarding default settings (e.g. despike,
 %   feat_dir, func).
 register_feat(session_dir,subject_name);
 %% Create regressors for denoise
@@ -78,7 +78,7 @@ create_localWMtc(session_dir);
 remove_noise(session_dir,subject_name);
 %% Clean up
 % Cleans up intermediate files and directories
-clean_up(session_dir)
+%clean_up(session_dir)
 %% Smooth surface and volume
 % Smooth the volume and/or surface functional volumes using a 5mm kernel
 smooth_vol_surf(session_dir);
@@ -89,66 +89,55 @@ xhemi_check(session_dir,subject_name);
 %% Project retinotopic templates to subject space
 project_template(session_dir,subject_name)
 
-%% Make CF predictions
-template = 'fine';
-make_decimated_CF_predictions(session_dir,subject_name,runNum,hemi,template);
+%% Make SC ROI
+% Creates a sphere around the SC (left/right) in Freesurfer's cvs_MNI space,
+%   then projects to subject native anatomical space
+%   For GKA/08252015
+%   center_voxs{1} = [132   155   119];
+%   center_voxs{1} = [123   155   119];
+%
+make_SC_sphere(session_dir,subject_name,center_voxs)
+%% Make LGN ROI
+% Takens an LGN ROI (left/right) in Freesurfer's cvs_MNI space, created
+%   using FSL's 1mm atlas, and projects to subject native anatomical space
+make_LGN_ROI(session_dir,subject_name);
 
-%% Find best connective field
-find_best_CF(session_dir,runNum,hemi);
-
-%% Plot maps
-hemis = {'lh' 'rh'};
-for rr = [2 4 6]
-    for hh = 1:length(hemis)
-        hemi = hemis{hh};
-        plot_best_decimated_CF(session_dir,subject_name,rr,hemi);
-        %plot_best_V1_decimated_CF(session_dir,subject_name,rr,hemi);
-    end
+%% Create feat script for running GLM
+funcs = {...
+    'dbrf.tf' ...
+    'noWMdbrf.tf' ...
+    };
+for ff = 1:length(funcs)
+    func = funcs{ff};
+    feat_TTF(session_dir,func);
 end
-%% Average CF runs
-%   Usage:
-%   average_CF(session_dir,subject_name,runs,srcROI,trgROI,hemis)
-map_type = 'movie';
-runs = [2 4 6];
-srcROI = 'cortex';
-template = 'prf_V1';
-average_CF(session_dir,subject_name,map_type,runs,srcROI,template);
-
-%% Deprecated
-
-
-
-
-
-
-
-
-%% Create occipital ROI
-create_occipital(session_dir,subject_name);
-%% Calculate cortical distance (e.g. in V1)
-hemis = {'lh' 'rh'};
-for hh = 1:length(hemis)
-    hemi = hemis{hh};
-    calc_surface_distance(session_dir,subject_name,hemi);
+%% Run an F-test on bold runs from OneLight data at 7T
+funcs = {...
+    'dbrf.tf' ...
+    'noWMdbrf.tf' ...
+    };
+for ff = 1:length(funcs)
+    func = funcs{ff};
+    [F,df] = run_F_test(session_dir,subject_name,func);
 end
-%% run CF
-%   Usage:
-%   run_CF(session_dir,subject_name,runNum,hemi,srcROI,trgROI,DoG,seedSig1,seedSig2,seedSig3,seedSig4)
-run_CF(session_dir,subject_name);
-%% Average CF runs
-%   Usage:
-%   average_CF(session_dir,subject_name,runs,srcROI,trgROI,hemis)
-average_CF(session_dir,subject_name,runs);
+%% Combine hemispheres
+combine_template_hemispheres(session_dir);
 
-%%
-compare_CF_pRF(session_dir,'cortex',template,map_type)
-
-
-%% Project to cvs MNI space
-% project_CF_cvsMNI(session_dir,subject_name);
-%% Plot CF map
-% plot_CF_maps(session_dir);
-
+%% Plot TTF
+% creates (using make_TTF function) and plots TTFs for specified
+% hemishperes and ROIs
+func = 'brf.tf';
+ROIs = {'MT'};%{'V2/V3low' 'V2/V3mid' 'V2/V3high'}; % 'SC'; 'V1low'; 'V1mid'; 'V1high';
+Fthresh = 4;
+hemi = 'mh';
+for rr = 1:length(ROIs)
+    ROI = ROIs{rr};
+    [means,sems] = make_TTF(session_dir,subject_name,hemi,func,ROI,Fthresh);
+    plot_TTF(means,SEMs,ROI);
+end
+%% Make main effect maps
+% 'contrastNum' specifies the contrast for the main effect.
+make_main_effect_map(session_dir,subject_name,func,contrastNum);
 
 
 

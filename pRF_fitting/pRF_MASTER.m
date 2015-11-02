@@ -78,7 +78,7 @@ create_localWMtc(session_dir);
 remove_noise(session_dir,subject_name);
 %% Clean up
 % Cleans up intermediate files and directories
-clean_up(session_dir)
+%clean_up(session_dir)
 %% Smooth surface and volume
 % Smooth the volume and/or surface functional volumes using a 5mm kernel
 smooth_vol_surf(session_dir);
@@ -97,24 +97,119 @@ create_occipital(session_dir,subject_name);
 % If ROI = 'occipital', the averaged maps are plotted on the fsaverage_sym
 %   surface, averaged across hemispheres, and converted to a format for
 %   template fitting using Mathematica.
-runs = [1,3,5];
-ROI = 'cortex';
-do_pRF(session_dir,subject_name,runs,ROI)
+run_pRF(session_dir,subject_name,runNum,hemi,srcROI,imFileName,paramsFileName)
+%% Average pRF
+average_pRF(session_dir,subject_name,runs,srcROI);
 %% Prepare for Mathematica
-SUBJECTS_DIR = '/jet/abock/freesurfer_subjects';
-prepare_pRF_Mathematica(session_dir,subject_name,SUBJECTS_DIR)
+prepare_pRF_Mathematica(session_dir,subject_name)
 
 %% Run template fitting in Mathematica
 % In a notebook in Mathematica, run the template fitting developed by Noah
-%   Benson. The last line of that notebook saves a file (default:
-%   ~/Desktop/template_fitting.mgz).
+%   Benson.
 %% Create the pRF template .nii.gz files, using the output .mgz from Mathematica (above)
 % Takes the .mgz output from Mathematica, convertes to nii.gz and separates
 %   out the pol, ecc, and areas maps into individual volumes.
 create_pRF_template(session_dir,subject_name)
-%% Calculate cortical distance (e.g. in V1)
-hemis = {'lh' 'rh'};
-for hh = 1:length(hemis)
-    hemi = hemis{hh};
-    calc_surface_distance(session_dir,subject_name,hemi);
+%% If doing correlation template fitting
+%
+%   see below
+%
+%%%
+%% Takes the .mgz output from Mathematica, convertes to nii.gz and separates
+%   out the pol, ecc, and areas maps into individual volumes.
+% note: this can also be run on the cluster
+convert_Mathematica_templates(session_dir);
+
+%% Decimate surfaces
+% This has to be done in terminal IN LINUX!
+%   cd $SUBJECTS_DIR/<subject_name>/surf
+%   mris_decimate -d 0.1 ./lh.inflated ./lh.0.1.inflated
+%   mris_decimate -d 0.1 ./rh.inflated ./rh.0.1.inflated
+
+%% Decimate the pRF templates and bold runs
+%   This can also be run on the cluster
+decimate_templates(session_dir,subject_name);
+decimate_bold(session_dir,subject_name);
+
+%% Create cluster shell scripts
+%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
+%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK';
+%   runs = '[3,4,6]'; % must be a string (!)
+create_regress_template_scripts(session_dir,outDir,runs);
+
+%% Run template fits on the cluster ('regress_template')
+% i.e. run the shell scripts created above
+%% Find the best template
+template = 'fine';
+hemi = 'lh';
+[varexp,params,sorted_templates] = find_best_template(session_dir,template,hemi);
+%% Run template fine template fitting in Mathematica
+% In a notebook in Mathematica, run the template fitting developed by Noah
+%   Benson.
+%% Takes the .mgz output from Mathematica, convertes to nii.gz and separates
+%   out the pol, ecc, and areas maps into individual volumes.
+% note: this can also be run on the cluster
+convert_Mathematica_fine_templates(session_dir);
+%% Decimate fine templates
+decimate_fine_templates(session_dir,subject_name);
+%% Create cluster shell scripts for fine template search
+%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
+%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/fine_template_scripts';
+%   runs = '[3,4,6]'; % must be a string (!)
+create_regress_fine_template_scripts(session_dir,outDir,runs);
+
+%% Plot the template fits as a 3D mesh
+session_dirs = {...
+    '/data/jet/abock/data/Retinotopy/AEK/10012014' ...
+    '/data/jet/abock/data/Retinotopy/ASB/10272014' ...
+    '/data/jet/abock/data/Retinotopy/GKA/10152014' ...
+    };
+template = 'fine';
+plot_error_bars = 0;
+plot_template_mesh(session_dirs,template,plot_error_bars);
+%% Plot the best templates by template type
+mat = plot_template_comparison;
+
+%% Create cluster shell scripts for COARSE template search
+%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
+%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/fine_template_scripts';
+%   runs = '[3,4,6]'; % must be a string (!)
+create_template_residual_scripts(session_dir,outDir,runs);
+
+%% Create cluster shell scripts for FINE template search
+%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
+%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/fine_template_scripts';
+%   runs = '[3,4,6]'; % must be a string (!)
+create_fine_template_residual_scripts(session_dir,outDir,runs);
+
+%% Copy the best coase and fine template to the session_dir
+templates  = {'coarse' 'fine'};
+for tt = 1:length(templates)
+    template = templates{tt};
+    copy_best_template(session_dir,template);
 end
+
+%% Plot the template variance explained for each vertex
+plot_template_varexp(session_dir,subject_name,hemi,template,makeplot)
+
+%% Plot the template variance explained for each vertex
+plot_fine_template_varexp(session_dir,subject_name,hemi,template,makeplot)
+%% Deprecated
+
+
+
+%% Plot the best template
+% Makes a 3D scatter plot, and exports the variance explained,
+%   corresponding template parameters, and distances from the best template
+template = 'coarse';
+hemi = 'rh';
+makeplot=1;
+[varexp,params,dists,newx,newy,newz] = plot_template_fits(session_dir,template,hemi,makeplot);
+%% Make SC ROI
+% Creates a sphere around the SC (left/right) in Freesurfer's cvs_MNI space,
+%   then projects to subject native anatomical space
+make_SC_sphere(session_dir,subject_name);
+%% Make LGN ROI
+% Takens an LGN ROI (left/right) in Freesurfer's cvs_MNI space, created
+%   using FSL's 1mm atlas, and projects to subject native anatomical space
+make_LGN_ROI(session_dir,subject_name);

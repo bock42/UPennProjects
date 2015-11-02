@@ -81,26 +81,16 @@ remove_noise(session_dir,subject_name);
 clean_up(session_dir)
 %% Smooth surface and volume
 % Smooth the volume and/or surface functional volumes using a 5mm kernel
-func = 'dbrf.tf';
-ROI = {'surface' 'volume'};
-hemi = {'lh' 'rh'};
-session_dirs = {...
-    '/Users/abock/data/SC/GKA/09242014/' ...
-    '/Users/abock/data/SC/GKA/10022014/' ...
-    '/Users/abock/data/SC/GKA/12152014/'};
-for s = 1:length(session_dirs)
-    session_dir = session_dirs{s};
-    d = listdir(fullfile(session_dir,'*bold_*'),'dirs');
-    nruns = length(d);
-    poolobj = gcp; % Gets current pool, and if no pool, creates a new one
-    parfor rr = 1:nruns
-        smooth_vol_surf(session_dir,rr,func,ROI,hemi)
-    end
-    delete(poolobj); % close parpool
-    disp('done.');
-end
+smooth_vol_surf(session_dir);
+%% xhemi check
+% Checks that xhemireg and surfreg have been run for the specified
+% freesurfer subject.
+xhemi_check(session_dir,subject_name);
 %% Make contrasts
 d = listdir(fullfile(session_dir,'*bold_*'),'dirs');
+if isempty(d)
+    d = listdir(fullfile(session_dir,'BOLD_*'),'dirs');
+end
 runNums = load(fullfile(session_dir,'runs.txt'));
 blockdur = 16;
 TR = 2;
@@ -128,22 +118,92 @@ end
 %     '/Users/abock/data/SC/ASB/10082014/'};
 %session_dirs = {'/jet/abock/data/Retinotopy/ASB/06022015'};
 %subject_name = 'ASB_10272014_MPRAGE_ACPC_7T';
+session_dirs = {'/jet/abock/data/Retinotopy/ASB/10012014'};
+subject_name = 'ASB_10272014_MPRAGE_ACPC_7T';
 % session_dirs = {'/jet/abock/data/Retinotopy/GKA/06052015'};
 % subject_name = 'GKA_10152014_MPRAGE_ACPC_7T';
-session_dirs = {'/jet/abock/data/Retinotopy/AEK/01152015'};
-subject_name = 'AEK_09242014_MPRAGE_ACPC_7T';
+% session_dirs = {'/jet/abock/data/Retinotopy/AEK/01152015'};
+% subject_name = 'AEK_09242014_MPRAGE_ACPC_7T';
 %alldirs = {[1 4 7 10 13 16] [2 5 8 11 14 17] [3 6 9 12 15 18]};
 %alldirs = {[1 3 5] [2 4 6]};
-%alldirs = {[1 2 3]};
+alldirs = {[1 2 3]};
 %alldirs = {[1 4] [2 5] [3 6]};
-alldirs = {[1 2 4 5]};
+%alldirs = {[1 3 5]};
+%alldirs = {[1 2 4 5]};
 func = 'sdbrf.tf';
-%design_file = '/Users/Shared/Matlab/gkaguirrelab/Toolboxes/MRI_preprocessing/feat_higher_level_template_3dirs.fsf';
-design_file = '/Users/Shared/Matlab/gkaguirrelab/Toolboxes/MRI_preprocessing/feat_higher_level_template_4dirs.fsf';
+design_file = '/Users/Shared/Matlab/bock42/MRI_preprocessing/feat_higher_level_template_3dirs.fsf';
+%design_file = '/Users/Shared/Matlab/bock42/MRI_preprocessing/feat_higher_level_template_4dirs.fsf';
 for dd = 1:length(alldirs)
     feat_higher_level(session_dirs,subject_name,alldirs{dd},func,design_file)
     %feat_higher_level(session_dirs,subject_name,alldirs{dd},func,design_file)
 end
+%% Create maps for subcortical ROIs
+% AEK
+%   LGNcenters = {[149 156 121] [107 157 123]}; % lh and rh
+%   SCcenters = {[136 156 111] [123 152 114]}; % lh and rh
+% ASB
+%   LGNcenters = {[149 154 121] [106 153 121]}; % lh and rh
+%   SCcenters = {[132 152 115] [123 152 115]}; % lh and rh
+% GKA
+%   LGNcenters = {[147 156 121] [107 155 124]}; % lh and rh
+%   SCcenters = {[132 155 117] [123 153 118]}; % lh and rh
+%
+session_dir = '/jet/abock/data/Retinotopy/AEK/10012014';
+feat_session_dir = '/jet/abock/data/Retinotopy/AEK/01152015';
+LGNcenters = {[149 156 121] [107 157 123]}; % lh and rh
+SCcenters = {[136 156 111] [123 152 114]}; % lh and rh
+
+% session_dir = '/jet/abock/data/Retinotopy/ASB/10272014';
+% feat_session_dir = '/jet/abock/data/Retinotopy/ASB/06022015';
+% LGNcenters = {[149 154 121] [106 153 121]}; % lh and rh
+% SCcenters = {[132 152 115] [123 152 115]}; % lh and rh
+%
+% session_dir = '/jet/abock/data/Retinotopy/GKA/06052015';
+% feat_session_dir = '/jet/abock/data/Retinotopy/GKA/06052015';
+% LGNcenters = {[147 156 121] [107 155 124]}; % lh and rh
+% SCcenters = {[132 155 117] [123 153 118]}; % lh and rh
+
+session_dir = '/jet/abock/data/Retinotopy/GKA/06052015';
+feat_session_dir = '/jet/abock/data/Retinotopy/GKA/06052015';
+LGNcenters = {[147 156 121] [107 155 124]}; % lh and rh
+SCcenters = {[132 155 117] [123 153 118]}; % lh and rh
+
+ROIs = {'LGN' 'SC'};
+hemis = {'mh' 'lh' 'rh'};
+srcROI = 'volume';
+trgROI = 'prf_V1';
+for rr = 1:length(ROIs);
+    ROI = ROIs{rr};
+    for hh = 1:length(hemis)
+        hemi = hemis{hh};
+        if strcmp(ROI,'LGN')
+            if strcmp(hemi,'rh')
+                center_vox = LGNcenters{2};
+            else
+                center_vox = LGNcenters{1};
+            end
+        elseif strcmp(ROI,'SC')
+            if strcmp(hemi,'rh')
+                center_vox = SCcenters{2};
+            else
+                center_vox = SCcenters{1};
+            end
+        end
+        create_subcortical_CF_masks(session_dir,feat_session_dir,ROI,hemi,center_vox);
+    end
+end
+%%
+
+
+
+
+
+
+
+
+
+
+
 %% SC
 input_vol = 'mh.volume.avg.co.prfs.nii.gz';
 output_vol = 'lh.volume.SC.nii.gz';
