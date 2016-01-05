@@ -97,7 +97,7 @@ create_occipital(session_dir,subject_name);
 % If ROI = 'occipital', the averaged maps are plotted on the fsaverage_sym
 %   surface, averaged across hemispheres, and converted to a format for
 %   template fitting using Mathematica.
-run_pRF(session_dir,subject_name,runNum,hemi,srcROI,imFileName,paramsFileName)
+run_pRF(session_dir,subject_name,runNum,hemi,srcROI)
 %% Average pRF
 average_pRF(session_dir,subject_name,runs,srcROI);
 %% Prepare for Mathematica
@@ -129,20 +129,32 @@ convert_Mathematica_templates(session_dir);
 %% Decimate the pRF templates and bold runs
 %   This can also be run on the cluster
 decimate_templates(session_dir,subject_name);
-decimate_bold(session_dir,subject_name);
+decimate_bold(session_dir,subject_name,func);
 
 %% Create cluster shell scripts
-%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
-%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK';
-%   runs = '[3,4,6]'; % must be a string (!)
-create_regress_template_scripts(session_dir,outDir,runs);
+templateType = 'coarse';
+%session_dir = '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/';
+%outDir = fullfile('/data/jet/abock/cluster_shell_scripts/fit_templates/ASB/10272014',templateType);
+session_dir = '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/';
+outDir = fullfile('/data/jet/abock/cluster_shell_scripts/fit_templates/GKA/10152014',templateType);
+%session_dir = '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/';
+%outDir = fullfile('/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/10012014',templateType);
+runs = '[2,4,6]'; % must be a string (!)
+func = 's5.dbrf.tf';
+saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie');
+create_regress_template_scripts(session_dir,templateType,outDir,runs,func,saveDir)
 
 %% Run template fits on the cluster ('regress_template')
 % i.e. run the shell scripts created above
 %% Find the best template
-template = 'fine';
-hemi = 'lh';
-[varexp,params,sorted_templates] = find_best_template(session_dir,template,hemi);
+%session_dir = '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/';
+session_dir = '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/';
+%session_dir = '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/';
+templateType = 'coarse';
+hemi = 'rh';
+func = 's5.dbrf.tf';
+tdir = fullfile(session_dir,'pRFs',templateType,func,'Movie');
+[varexp,params,sorted_templates] = find_best_template(templateType,tdir,hemi);
 %% Run template fine template fitting in Mathematica
 % In a notebook in Mathematica, run the template fitting developed by Noah
 %   Benson.
@@ -164,9 +176,23 @@ session_dirs = {...
     '/data/jet/abock/data/Retinotopy/ASB/10272014' ...
     '/data/jet/abock/data/Retinotopy/GKA/10152014' ...
     };
-template = 'fine';
+session_dirs = {...
+    '/data/jet/abock/data/Retinotopy/ASB/10272014' ...
+    };
+template = 'coarse';
+func = 's5.dbrf.tf';
+cond = 'Movie';
 plot_error_bars = 0;
-plot_template_mesh(session_dirs,template,plot_error_bars);
+plot_template_mesh(session_dirs,template,func,cond,plot_error_bars);
+%% For the entopic stimuli
+session_dirs = {...
+    '/data/jet/abock/data/Network_Connectivity/ASB/11042015/' ...
+    };
+template = 'coarse';
+func = 's5.drf';
+cond = 'Parvo';
+plot_error_bars = 0;
+plot_template_mesh(session_dirs,template,func,cond,plot_error_bars);
 %% Plot the best templates by template type
 mat = plot_template_comparison;
 

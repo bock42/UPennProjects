@@ -98,11 +98,15 @@ find_best_CF(session_dir,runNum,hemi);
 
 %% Plot maps
 hemis = {'lh' 'rh'};
-for rr = [2 4 6]
+runs = [2 4 6];
+decimation_level='0.1';
+src_surf = 'inflated';
+srcROI = 'volume';
+for rr = runs
     for hh = 1:length(hemis)
         hemi = hemis{hh};
-        plot_best_decimated_CF(session_dir,subject_name,rr,hemi);
-        %plot_best_V1_decimated_CF(session_dir,subject_name,rr,hemi);
+        plot_best_decimated_CF(session_dir,subject_name,rr,hemi,decimation_level,src_surf,srcROI);
+        plot_best_V1_decimated_CF(session_dir,subject_name,rr,hemi,decimation_level,src_surf,srcROI);
     end
 end
 %% Average CF runs
@@ -110,9 +114,10 @@ end
 %   average_CF(session_dir,subject_name,runs,srcROI,trgROI,hemis)
 map_type = 'movie';
 runs = [2 4 6];
-srcROI = 'cortex';
-template = 'prf_V1';
+srcROI = 'volume';
+template = 'fine';
 average_CF(session_dir,subject_name,map_type,runs,srcROI,template);
+average_V1_CF(session_dir,subject_name,map_type,runs,srcROI,template);
 
 %% Deprecated
 

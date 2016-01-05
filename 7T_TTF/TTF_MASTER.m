@@ -102,6 +102,9 @@ make_SC_sphere(session_dir,subject_name,center_voxs)
 %   using FSL's 1mm atlas, and projects to subject native anatomical space
 make_LGN_ROI(session_dir,subject_name);
 
+%% Make covariates for FSL's FEAT
+
+make_covariates_7T_OneLight(session_dir,bold_num,mat_num,mat_dir)
 %% Create feat script for running GLM
 funcs = {...
     'dbrf.tf' ...
@@ -113,27 +116,38 @@ for ff = 1:length(funcs)
 end
 %% Run an F-test on bold runs from OneLight data at 7T
 funcs = {...
-    'dbrf.tf' ...
-    'noWMdbrf.tf' ...
+    'rf.tf' ...
     };
 for ff = 1:length(funcs)
     func = funcs{ff};
     [F,df] = run_F_test(session_dir,subject_name,func);
 end
 %% Combine hemispheres
-combine_template_hemispheres(session_dir);
+combine_template_hemispheres(session_dir,subject_name,0);
 
 %% Plot TTF
 % creates (using make_TTF function) and plots TTFs for specified
 % hemishperes and ROIs
-func = 'brf.tf';
-ROIs = {'MT'};%{'V2/V3low' 'V2/V3mid' 'V2/V3high'}; % 'SC'; 'V1low'; 'V1mid'; 'V1high';
-Fthresh = 4;
+% session_dir = '/data/jet/aguirre/Projects/Retinotopy/ASB/A102015B';
+% subject_name = 'A101415B';
+session_dir = '/data/jet/aguirre/Projects/Retinotopy/ASO/A102015O';
+subject_name = 'A092115O';
 hemi = 'mh';
+template = 'anat';
+func = 'rf.tf';
+ROIs = {'V1low' 'V1mid' 'V1high'};%{'MT'};%{'V2/V3low' 'V2/V3mid' 'V2/V3high'}; % 'SC'; 'V1low'; 'V1mid'; 'V1high';
+Fthresh = 4;
+ctx_ROIs = [5 15 50]; % eccentricity bands
+HzNames = {'Hz8','Hz10','Hz12','Hz16','Hz20','Hz24'};
+% If entopic (otherwise use defaults)
+xlims = [0 7];
+ylims = [-1 5];
+xTick = [0 1 2 3 4 5 6 7];
+xLabels = {'0Hz','8Hz','10Hz','12Hz','16Hz','20Hz','24Hz','32Hz'};
 for rr = 1:length(ROIs)
     ROI = ROIs{rr};
-    [means,sems] = make_TTF(session_dir,subject_name,hemi,func,ROI,Fthresh);
-    plot_TTF(means,SEMs,ROI);
+    [means{rr},sems{rr}] = psc_cope(session_dir,subject_name,hemi,template,func,ROI,Fthresh,ctx_ROIs,HzNames);
+    plot_TTF(means{rr},sems{rr},ROI,xlims,ylims,xTick,xLabels);
 end
 %% Make main effect maps
 % 'contrastNum' specifies the contrast for the main effect.
