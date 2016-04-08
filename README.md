@@ -1,5 +1,5 @@
 # Projects
-Common repository for project code for the gkaguirrelab
+Common repository for project code for the Aguirre Lab, University of Pennsylvania
 
 - 7T_TTF
 - Blind_brain_structural_alteration
