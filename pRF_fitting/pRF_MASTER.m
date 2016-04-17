@@ -35,11 +35,67 @@
 %   '~/data/2014-10-29.angle-template.nii.gz' ...
 %   '~/data/2014-10-29.areas-template.nii.gz'};
 %% Project retinotopic templates to subject space
-project_template(session_dir,subject_name)
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+subjects = {...
+    'AEK_09242014_MPRAGE_ACPC_7T' ...
+    'ASB_10272014_MPRAGE_ACPC_7T' ...
+    'GKA_10152014_MPRAGE_ACPC_7T' ...
+    };
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    subject_name = subjects{ss};
+    project_template(session_dir,subject_name)
+end
+%% Copy templates to 'pRFs/anat_templates
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+subjects = {...
+    'AEK_09242014_MPRAGE_ACPC_7T' ...
+    'ASB_10272014_MPRAGE_ACPC_7T' ...
+    'GKA_10152014_MPRAGE_ACPC_7T' ...
+    };
+hemis = {'lh' 'rh'};
+templates = {'areas' 'ecc' 'pol'};
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    subject_name = subjects{ss};
+    outDir = fullfile(session_dir,'pRFs','anat_templates');
+    if ~exist(outDir,'dir')
+        mkdir(outDir);
+    end
+    for hh = 1:length(hemis)
+        hemi = hemis{hh};
+        for tt = 1:length(templates)
+            template = templates{tt};
+            system(['cp ' fullfile(session_dir,[hemi '.' template '.nii.gz']) ' ' ...
+                fullfile(outDir,[hemi '.' template '.anat.nii.gz'])]);
+        end
+    end
+end
 %% Decimate the anatomical template files
-tdir = fullfile(session_dir,'pRFs','anat_templates');
-decimate_templates(session_dir,subject_name,tdir);
-
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+subjects = {...
+    'AEK_09242014_MPRAGE_ACPC_7T' ...
+    'ASB_10272014_MPRAGE_ACPC_7T' ...
+    'GKA_10152014_MPRAGE_ACPC_7T' ...
+    };
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    subject_name = subjects{ss};
+    tdir = fullfile(session_dir,'pRFs','anat_templates');
+    decimate_templates(session_dir,subject_name,tdir);
+end
 %% pRF analysis
 % Generates a population receptive field (pRF) estimate using data obtained
 %   while subjects viewed retinotopy stimuli (e.g. drifting bars). The
@@ -255,13 +311,13 @@ V2V3 = [0 1];
 for ss = 1:length(sessions)
     session_dir = sessions{ss};
     subject_name = subjects{ss};
-    convert_Mathematica_fine_templates(session_dir);
     for i = 1:length(V2V3)
         if V2V3(i)
             tdir = fullfile(session_dir,'pRFs','fine_model_templates','V2V3');
         else
             tdir = fullfile(session_dir,'pRFs','fine_model_templates','V1');
         end
+        convert_Mathematica_fine_templates(session_dir,tdir);
         decimate_templates(session_dir,subject_name,tdir);
     end
 end
