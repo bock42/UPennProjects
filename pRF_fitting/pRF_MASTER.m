@@ -1,4 +1,6 @@
-%% This script will run a pRF analysis pipeline
+%% This script will run the pRF analysis pipeline
+%
+%   *** It is assumed that the MRklar pipeline was already run ***
 %
 % Required software:
 %   Freesurfer, FSL
@@ -22,74 +24,22 @@
 %
 %   Written by Andrew S Bock Dec 2014
 
-%% Sort_nifti
-%   Sort dicoms into series specific directories, convert to nifti
-sort_nifti(session_dir);
-%% Freesurfer_7T
-% If data were collected at 7T, see "Freesurfer_7T"
-%% make_fieldmap
-% Creates a B0 field map, and brain extracts the magnitude image by
-%   registering that image to the freesurfer "brain.mgz" image.
-%   If not already run, run subject through Freesurfer pipeline. "sort_nifti"
-%   produced the typical commands for running through the Freesurfer pipeline
-%   for data collect at 3T.
-make_fieldmap(session_dir,subject_name);
-%% skull_strip
-% Creates skull stripped file MPRAGE_brain.nii.gz using FreeSurfer tools
-skull_strip(session_dir,subject_name);
-%% feat_mc_b0
-% Motion correct and B0 unwarp functional runs. This script has the option
-%   to despike data as well. The result will be a design file for feat, and
-%   the corresponding script to run feat in terminal. See 'help feat_mc_b0'
-%   for details regarding default settings (e.g. despike, TR, warp_dir).
-feat_mc_b0(session_dir,subject_name);
-%% bbregister
-% Registers the motion corrected and B0 unwarped functional volumes from
-%   feat_mc_b0 to the corresponding Freesurfer anatomical image. See 'help
-%   bbregister for details regarding default settings (e.g. despike,
-%   feat_dir, func).
-register_feat(session_dir,subject_name);
-%% Create regressors for denoise
-% Creates a nuisance regressor text file, based on physiological noise
-%   and motion. If a task-design, the motion parameters are made orthogonal
-%   to the design.
-create_regressors(session_dir);
-%% Temporal Filter
-% Remove temporal frequencies. Default is to use the 'detrend' function,
-%   based on the 'type' input (see help temporal_filter). You can also pass
-%   'bptf' as the 'type' input, which can run high, low, or band-pass
-%   temporal filters.
-temporal_filter(session_dir);
-%% Segment freesurfer aseg.mgz volume
-% Segments the freesurfer anatomical aseg.mgz volume into several ROIs in
-%   the session_dir.
-segment_anat(session_dir,subject_name);
-%% Project anatomical ROIs to functional space
-% Projects anatomical ROIs into functional space in each bold directory.
-project_anat2func(session_dir,subject_name);
-%% Create localWM timecourses
-% Creates local white matter timecourses for each voxel, and saves these
-%   timecourses as a 4D volume [func '.WMtc.nii.gz']. The default 'func'
-%   input is 'brf', so the final 4D volume will be 'brf.WMtc.nii.gz'. Will
-%   also return an output 4D matrix 'WMtc'.
-create_localWMtc(session_dir);
-%% Remove noise
-% Removes physiological and other non-neuronal noise regressors
-remove_noise(session_dir,subject_name);
-%% Clean up
-% Cleans up intermediate files and directories
-%clean_up(session_dir)
-%% Smooth surface and volume
-% Smooth the volume and/or surface functional volumes using a 5mm kernel
-smooth_vol_surf(session_dir);
-%% xhemi check
-% Checks that xhemireg and surfreg have been run for the specified
-% freesurfer subject.
-xhemi_check(session_dir,subject_name);
+%% Copy template files
+%   Get the template files from the Aguirre lab website
+%       https://cfn.upenn.edu/aguirre/wiki/public:retinotopy_template
+%
+% copy to a local folder:
+%
+% template_files = {...
+%   '~/data/2014-10-29.eccen-template.nii.gz' ...
+%   '~/data/2014-10-29.angle-template.nii.gz' ...
+%   '~/data/2014-10-29.areas-template.nii.gz'};
 %% Project retinotopic templates to subject space
 project_template(session_dir,subject_name)
-%% Create occipital ROI
-create_occipital(session_dir,subject_name);
+%% Decimate the anatomical template files
+tdir = fullfile(session_dir,'pRFs','anat_templates');
+decimate_templates(session_dir,subject_name,tdir);
+
 %% pRF analysis
 % Generates a population receptive field (pRF) estimate using data obtained
 %   while subjects viewed retinotopy stimuli (e.g. drifting bars). The
@@ -99,7 +49,25 @@ create_occipital(session_dir,subject_name);
 %   template fitting using Mathematica.
 run_pRF(session_dir,subject_name,runNum,hemi,srcROI)
 %% Average pRF
-average_pRF(session_dir,subject_name,runs,srcROI);
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014_smooth_average/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014_smooth_average/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014_smooth_average/' ...
+    };
+subjects = {...
+    'AEK_09242014_MPRAGE_ACPC_7T' ...
+    'ASB_10272014_MPRAGE_ACPC_7T' ...
+    'GKA_10152014_MPRAGE_ACPC_7T' ...
+    };
+allRuns = {[1,2,5],[1,3,5],[1,3,5]};
+hemis = {'lh' 'rh'};
+srcROI = 'LGN';
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    subject_name = subjects{ss};
+    runs = allRuns{ss};
+    average_pRF(session_dir,subject_name,runs,srcROI);
+end
 %% Prepare for Mathematica
 prepare_pRF_Mathematica(session_dir,subject_name)
 
@@ -109,15 +77,94 @@ prepare_pRF_Mathematica(session_dir,subject_name)
 %% Create the pRF template .nii.gz files, using the output .mgz from Mathematica (above)
 % Takes the .mgz output from Mathematica, convertes to nii.gz and separates
 %   out the pol, ecc, and areas maps into individual volumes.
-create_pRF_template(session_dir,subject_name)
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+subjects = {...
+    'AEK_09242014_MPRAGE_ACPC_7T' ...
+    'ASB_10272014_MPRAGE_ACPC_7T' ...
+    'GKA_10152014_MPRAGE_ACPC_7T' ...
+    };
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    subject_name = subjects{ss};
+    create_pRF_template(session_dir,subject_name);
+    tdir = fullfile(session_dir,'pRFs','pRF_templates');
+    decimate_templates(session_dir,subject_name,tdir);
+end
 %% If doing correlation template fitting
 %
 %   see below
 %
 %%%
-%% Takes the .mgz output from Mathematica, convertes to nii.gz and separates
+%% Create cluster shell scripts (pRF)
+templateType = 'pRF';
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+outDirs = {...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/10012014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/ASB/10272014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/GKA/10152014/' templateType] ...
+    };
+allRuns = {'[3,4,6]','[2,4,6]','[2,4,6]'};
+func = 's5.dbrf.tf';
+tcPart = 'full';
+leaveOut = '0';
+V2V3 = [0 1];
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    for i = 1:length(V2V3)
+        if V2V3(i)
+            outDir = fullfile(outDirs{ss},'V2V3'); % V1-V2, V1-V3, AND V2-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V2V3');
+        else
+            outDir = fullfile(outDirs{ss},'V1'); % V1-V2, V1-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V1');
+        end
+        runs = allRuns{ss};
+        create_regress_template_scripts(session_dir,templateType,outDir,runs,func,saveDir,tcPart,leaveOut,num2str(V2V3(i)));
+    end
+end
+%% Create cluster shell scripts (anat)
+templateType = 'anat';
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+outDirs = {...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/10012014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/ASB/10272014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/GKA/10152014/' templateType] ...
+    };
+allRuns = {'[3,4,6]','[2,4,6]','[2,4,6]'};
+func = 's5.dbrf.tf';
+tcPart = 'full';
+leaveOut = '0';
+V2V3 = [0 1];
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    for i = 1:length(V2V3)
+        if V2V3(i)
+            outDir = fullfile(outDirs{ss},'V2V3'); % V1-V2, V1-V3, AND V2-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V2V3');
+        else
+            outDir = fullfile(outDirs{ss},'V1'); % V1-V2, V1-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V1');
+        end
+        runs = allRuns{ss};
+        create_regress_template_scripts(session_dir,templateType,outDir,runs,func,saveDir,tcPart,leaveOut,num2str(V2V3(i)));
+    end
+end
+%% Convert coarse_model_templates 
+%Takes the .mgz output from Mathematica, convertes to nii.gz and separates
 %   out the pol, ecc, and areas maps into individual volumes.
-% note: this can also be run on the cluster
+%   note: this can also be run on the cluster
 convert_Mathematica_templates(session_dir);
 
 %% Decimate surfaces
@@ -128,114 +175,128 @@ convert_Mathematica_templates(session_dir);
 
 %% Decimate the pRF templates and bold runs
 %   This can also be run on the cluster
-decimate_templates(session_dir,subject_name);
+tdir = fullfile(session_dir,'pRFs','coarse_model_templates');
+decimate_templates(session_dir,subject_name,tdir);
 decimate_bold(session_dir,subject_name,func);
 
-%% Create cluster shell scripts
+%% Create cluster shell scripts (coarse)
 templateType = 'coarse';
-%session_dir = '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/';
-%outDir = fullfile('/data/jet/abock/cluster_shell_scripts/fit_templates/ASB/10272014',templateType);
-session_dir = '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/';
-outDir = fullfile('/data/jet/abock/cluster_shell_scripts/fit_templates/GKA/10152014',templateType);
-%session_dir = '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/';
-%outDir = fullfile('/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/10012014',templateType);
-runs = '[2,4,6]'; % must be a string (!)
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+outDirs = {...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/10012014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/ASB/10272014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/GKA/10152014/' templateType] ...
+    };
+allRuns = {'[3,4,6]','[2,4,6]','[2,4,6]'};
 func = 's5.dbrf.tf';
-saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie');
-create_regress_template_scripts(session_dir,templateType,outDir,runs,func,saveDir)
-
-%% Run template fits on the cluster ('regress_template')
+tcPart = 'full';
+leaveOut = '0';
+V2V3 = [0 1];
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    for i = 1:length(V2V3)
+        if V2V3(i)
+            outDir = fullfile(outDirs{ss},'V2V3'); % V1-V2, V1-V3, AND V2-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V2V3');
+        else
+            outDir = fullfile(outDirs{ss},'V1'); % V1-V2, V1-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V1');
+        end
+        runs = allRuns{ss};
+        create_regress_template_scripts(session_dir,templateType,outDir,runs,func,saveDir,tcPart,leaveOut,num2str(V2V3(i)));
+    end
+end
+%% Run 'coarse' template fits on the cluster ('regress_template')
 % i.e. run the shell scripts created above
+
 %% Find the best template
-%session_dir = '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/';
-session_dir = '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/';
-%session_dir = '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/';
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+hemis = {'lh' 'rh'};
 templateType = 'coarse';
-hemi = 'rh';
 func = 's5.dbrf.tf';
-tdir = fullfile(session_dir,'pRFs',templateType,func,'Movie');
-[varexp,params,sorted_templates] = find_best_template(templateType,tdir,hemi);
-%% Run template fine template fitting in Mathematica
-% In a notebook in Mathematica, run the template fitting developed by Noah
-%   Benson.
-%% Takes the .mgz output from Mathematica, convertes to nii.gz and separates
+fitType = 'V2V3'; % 'V1 = V1<->V2, V1<->V3; 'V2V3' =  V1<->V2, V1<->V3, AND V2<->V3
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    disp(session_dir);
+    for hh = 1:length(hemis)
+        hemi = hemis{hh};
+        disp(hemi);
+        tdir = fullfile(session_dir,'pRFs',templateType,func,'Movie',fitType);
+        [varexp,params,sorted_templates] = find_best_template(templateType,tdir,hemi,[],[],[],fitType);
+        disp(params(1));
+    end
+end
+%% Create fine templates, centered on the best template (above)
+% In a notebook in Mathematica, create the fine templates
+
+%% Convert fine_model_templates  
+%Takes the .mgz output from Mathematica, convertes to nii.gz and separates
 %   out the pol, ecc, and areas maps into individual volumes.
 % note: this can also be run on the cluster
-convert_Mathematica_fine_templates(session_dir);
-%% Decimate fine templates
-decimate_fine_templates(session_dir,subject_name);
-%% Create cluster shell scripts for fine template search
-%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
-%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/fine_template_scripts';
-%   runs = '[3,4,6]'; % must be a string (!)
-create_regress_fine_template_scripts(session_dir,outDir,runs);
-
-%% Plot the template fits as a 3D mesh
-session_dirs = {...
-    '/data/jet/abock/data/Retinotopy/AEK/10012014' ...
-    '/data/jet/abock/data/Retinotopy/ASB/10272014' ...
-    '/data/jet/abock/data/Retinotopy/GKA/10152014' ...
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
     };
-session_dirs = {...
-    '/data/jet/abock/data/Retinotopy/ASB/10272014' ...
+subjects = {...
+    'AEK_09242014_MPRAGE_ACPC_7T' ...
+    'ASB_10272014_MPRAGE_ACPC_7T' ...
+    'GKA_10152014_MPRAGE_ACPC_7T' ...
     };
-template = 'coarse';
-func = 's5.dbrf.tf';
-cond = 'Movie';
-plot_error_bars = 0;
-plot_template_mesh(session_dirs,template,func,cond,plot_error_bars);
-%% For the entopic stimuli
-session_dirs = {...
-    '/data/jet/abock/data/Network_Connectivity/ASB/11042015/' ...
-    };
-template = 'coarse';
-func = 's5.drf';
-cond = 'Parvo';
-plot_error_bars = 0;
-plot_template_mesh(session_dirs,template,func,cond,plot_error_bars);
-%% Plot the best templates by template type
-mat = plot_template_comparison;
-
-%% Create cluster shell scripts for COARSE template search
-%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
-%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/fine_template_scripts';
-%   runs = '[3,4,6]'; % must be a string (!)
-create_template_residual_scripts(session_dir,outDir,runs);
-
-%% Create cluster shell scripts for FINE template search
-%   session_dir = '/data/jet/abock/data/Retinotopy/AEK/10012014/';
-%   outDir = '/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/fine_template_scripts';
-%   runs = '[3,4,6]'; % must be a string (!)
-create_fine_template_residual_scripts(session_dir,outDir,runs);
-
-%% Copy the best coase and fine template to the session_dir
-templates  = {'coarse' 'fine'};
-for tt = 1:length(templates)
-    template = templates{tt};
-    copy_best_template(session_dir,template);
+V2V3 = [0 1];
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    subject_name = subjects{ss};
+    convert_Mathematica_fine_templates(session_dir);
+    for i = 1:length(V2V3)
+        if V2V3(i)
+            tdir = fullfile(session_dir,'pRFs','fine_model_templates','V2V3');
+        else
+            tdir = fullfile(session_dir,'pRFs','fine_model_templates','V1');
+        end
+        decimate_templates(session_dir,subject_name,tdir);
+    end
 end
+%% Create cluster shell scripts (fine)
+templateType = 'fine';
+sessions = {...
+    '/data/jet/abock/data/Template_Retinotopy/AEK/10012014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/ASB/10272014/' ...
+    '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/' ...
+    };
+outDirs = {...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/AEK/10012014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/ASB/10272014/' templateType] ...
+    ['/data/jet/abock/cluster_shell_scripts/fit_templates/GKA/10152014/' templateType] ...
+    };
+allRuns = {'[3,4,6]','[2,4,6]','[2,4,6]'};
+func = 's5.dbrf.tf';
+tcPart = 'full';
+leaveOut = '0';
+V2V3 = [0 1];
+for ss = 1:length(sessions)
+    session_dir = sessions{ss};
+    for i = 1:length(V2V3)
+        if V2V3(i)
+            outDir = fullfile(outDirs{ss},'V2V3'); % V1-V2, V1-V3, AND V2-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V2V3');
+        else
+            outDir = fullfile(outDirs{ss},'V1'); % V1-V2, V1-V3
+            saveDir = fullfile(session_dir,'pRFs',templateType,func,'Movie','V1');
+        end
+        runs = allRuns{ss};
+        create_regress_template_scripts(session_dir,templateType,outDir,runs,func,saveDir,tcPart,leaveOut,num2str(V2V3(i)));
+    end
+end
+%% Run the 'fine' template fits on the cluster ('regress_template')
+% i.e. run the shell scripts created above
 
-%% Plot the template variance explained for each vertex
-plot_template_varexp(session_dir,subject_name,hemi,template,makeplot)
 
-%% Plot the template variance explained for each vertex
-plot_fine_template_varexp(session_dir,subject_name,hemi,template,makeplot)
-%% Deprecated
-
-
-
-%% Plot the best template
-% Makes a 3D scatter plot, and exports the variance explained,
-%   corresponding template parameters, and distances from the best template
-template = 'coarse';
-hemi = 'rh';
-makeplot=1;
-[varexp,params,dists,newx,newy,newz] = plot_template_fits(session_dir,template,hemi,makeplot);
-%% Make SC ROI
-% Creates a sphere around the SC (left/right) in Freesurfer's cvs_MNI space,
-%   then projects to subject native anatomical space
-make_SC_sphere(session_dir,subject_name);
-%% Make LGN ROI
-% Takens an LGN ROI (left/right) in Freesurfer's cvs_MNI space, created
-%   using FSL's 1mm atlas, and projects to subject native anatomical space
-make_LGN_ROI(session_dir,subject_name);

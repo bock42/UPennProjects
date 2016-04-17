@@ -47,7 +47,7 @@ hemi = 'lh';
 src_surf = 'inflated';
 trg_surf = '0.01.inflated';
 in_vol = '/data/jet/abock/data/Template_Retinotopy/GKA/10152014/pRFs/model_templates/lh.areas.7.9.6.nii.gz';
-out_vol = '~/test.nii.gz';
+out_vol = '~/tmp.nii.gz';
 decimate_surf(subject_name,hemi,src_surf,trg_surf,in_vol,out_vol);
 surface_plot('blueareas',out_vol,subject_name,'lh',trg_surf);
 
